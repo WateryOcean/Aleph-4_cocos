@@ -111,7 +111,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ?  Color(0xFF6C5CE7) :  Color.fromARGB(26, 55, 51, 82),

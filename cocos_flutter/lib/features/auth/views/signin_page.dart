@@ -24,8 +24,8 @@ class _SignInPageState extends State<SignInPage> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
-      print('Sign in attempt - Email: $email, Password: $password');
-      print('Available users: ${AuthDummyData.dummyUsers.keys.toList()}');
+      // Debug: Sign in attempt
+      // Available users in AuthDummyData
 
       // Check against dummy data
       if (email.isEmpty || password.isEmpty) {
@@ -44,19 +44,15 @@ class _SignInPageState extends State<SignInPage> {
 
       if (AuthDummyData.dummyUsers.containsKey(email)) {
         if (AuthDummyData.dummyUsers[email] == password) {
-          print('Credentials valid! Navigating...');
-          // Success: Navigate to Home with loading overlay
+          // Credentials valid, navigating
           AppNavigation.navigateWithLoading(context, AppRoutes.home);
         } else {
-          print('Password mismatch!');
           _showErrorSnackBar('Invalid password. Please try again.');
         }
       } else {
-        print('Email not found!');
         _showErrorSnackBar('Email not found. Test credentials:\ncosplayer@example.com / password123\nadmin@cocos.com / admin2026\nguest@cocos.com / guestpass');
       }
     } catch (e) {
-      print('Error during sign in: $e');
       _showErrorSnackBar('Error: $e');
     }
   }

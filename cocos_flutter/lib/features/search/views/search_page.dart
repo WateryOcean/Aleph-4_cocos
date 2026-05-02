@@ -108,7 +108,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         title: Container(
           height: 45,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextField(
@@ -162,7 +162,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
             Icon(
               Icons.search_off_rounded,
               size: 64,
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(

@@ -33,8 +33,7 @@ class FullScreenLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ignore: deprecated_member_use
-      backgroundColor: AppColors.mainBackground.withOpacity(0.7),
+      backgroundColor: AppColors.mainBackground.withValues(alpha: 0.7),
       body: const CustomLoadingIndicator(),
     );
   }
