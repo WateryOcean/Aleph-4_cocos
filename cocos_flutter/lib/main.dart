@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
+import 'routes/app_routes.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CoCosApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  
+class CoCosApp extends StatelessWidget {
+  const CoCosApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: Placeholder() ,
+      title: 'CoCos',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      
+      // The app starts at the Splash screen
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.routes,
     );
   }
 }

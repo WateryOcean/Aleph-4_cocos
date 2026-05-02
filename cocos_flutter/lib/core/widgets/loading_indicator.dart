@@ -1,46 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../constants/app_colors.dart';
 
-class CustomTextField extends StatelessWidget {
-  final String label;
-  final String hint;
-  final IconData? icon;
-  final bool isPassword;
+class CustomLoadingIndicator extends StatelessWidget {
+  final double size;
+  final Color? color;
 
-  const CustomTextField({
+  const CustomLoadingIndicator({
     super.key,
-    required this.label,
-    required this.hint,
-    this.icon,
-    this.isPassword = false,
+    this.size = 40.0,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.nunito(fontWeight: FontWeight.bold),
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(color ?? const Color(0xFF8B5CF6)),
+          strokeWidth: 3.0,
         ),
-        const SizedBox(height: 8),
-        TextField(
-          obscureText: isPassword,
-          style: GoogleFonts.nunito(),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.nunito(),
-            prefixIcon: icon != null ? Icon(icon) : null,
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
+      ),
+    );
+  }
+}
+
+// Overlay version for full screen loading
+class FullScreenLoader extends StatelessWidget {
+  const FullScreenLoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // ignore: deprecated_member_use
+      backgroundColor: AppColors.mainBackground.withOpacity(0.7),
+      body: const CustomLoadingIndicator(),
     );
   }
 }
