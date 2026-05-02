@@ -1,4 +1,4 @@
-// lib/features/home/views/home_page.dart
+// lib/features/home/home_page.dart
 // ignore_for_file: curly_braces_in_flow_control_structures, deprecated_member_use
 import 'package:cocos_flutter/features/auth/data/auth_dummy.dart';
 import 'package:cocos_flutter/features/product/data/product_dummy.dart';
@@ -254,7 +254,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.only(left: 16.0),
           child: GestureDetector(
             onTap: () {
-              // AppRoutes.goToProfile(context);
+              AppRoutes.goToProfile(context);
             },
             child: CircleAvatar(
               radius: 25,
@@ -432,7 +432,12 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: CustomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          if (index == 1) AppRoutes.goToEvents(context);
+          if (index == 2) AppRoutes.goToCart(context);
+          if (index == 3) AppRoutes.goToProfile(context);
+        },
       ),
     );
   }
