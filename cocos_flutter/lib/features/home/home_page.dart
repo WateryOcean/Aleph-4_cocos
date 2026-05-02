@@ -292,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TextField(
@@ -518,7 +518,7 @@ class _HomePageState extends State<HomePage> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.white, size: 28),
@@ -543,7 +543,7 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF8B5CF6)
-              : Colors.white.withOpacity(0.05),
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -565,7 +565,7 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF8B5CF6)
-              : Colors.white.withOpacity(0.05),
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

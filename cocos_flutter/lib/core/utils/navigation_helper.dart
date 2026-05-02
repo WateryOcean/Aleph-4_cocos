@@ -27,7 +27,7 @@ class AppNavigation {
         Navigator.pushNamedAndRemoveUntil(context, routeName, (route) => false);
       }
     } catch (e) {
-      print('Navigation error: $e');
+      // Ignore navigation errors silently in production
       if (context.mounted) {
         try {
           Navigator.of(context, rootNavigator: true).pop();

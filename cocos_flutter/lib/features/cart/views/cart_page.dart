@@ -45,7 +45,7 @@ class _CartPageState extends State<CartPage> {
                     onRemove: () => setState(() => cart.items.removeAt(entry.key)),
                     onQuantityChanged: (val) => setState(() => entry.value.quantity = val),
                   );
-                }).toList(),
+                }),
 
                 // Flash Deal Banner
                 Container(
@@ -88,7 +88,7 @@ class _CartPageState extends State<CartPage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1C1B23), // Background gelap sesuai referensi
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: SafeArea(
         child: Row(

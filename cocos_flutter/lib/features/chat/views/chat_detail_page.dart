@@ -141,9 +141,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: msg.isMe ? const Color(0xFF6C5CE7).withOpacity(0.15) : const Color(0xFF1C1B23),
+                    color: msg.isMe ? const Color(0xFF6C5CE7).withValues(alpha: 0.15) : const Color(0xFF1C1B23),
                     borderRadius: BorderRadius.circular(10),
-                    border: msg.isMe ? Border.all(color: const Color(0xFF6C5CE7).withOpacity(0.3)) : null,
+                    border: msg.isMe ? Border.all(color: const Color(0xFF6C5CE7).withValues(alpha: 0.3)) : null,
                   ),
                   child: Text(
                     msg.text,
@@ -180,7 +180,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   hintText: 'Type a message...',
                   hintStyle: const TextStyle(color: Colors.white30),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: Colors.white.withValues(alpha: 0.05),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
