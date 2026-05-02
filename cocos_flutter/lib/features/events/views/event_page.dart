@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../models/event_model.dart';
-import '../data/event_dummy.dart';
-import 'event_detail_page.dart';
 import '../../../core/widgets/custom_navbar.dart';
+import '../../../routes/app_routes.dart';
+import '../data/event_dummy.dart';
+import '../models/event_model.dart';
+import 'event_detail_page.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -74,7 +75,9 @@ class _EventPageState extends State<EventPage> {
       bottomNavigationBar: CustomNavBar(
         currentIndex: 1,
         onTap: (index) {
-          // Navigation logic handled by project main structure
+          if (index == 0) AppRoutes.loginSuccess(context);
+          if (index == 2) AppRoutes.goToCart(context);
+          if (index == 3) AppRoutes.goToProfile(context);
         },
       ),
     );
@@ -85,7 +88,7 @@ class _EventPageState extends State<EventPage> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -130,10 +133,10 @@ class _EventPageState extends State<EventPage> {
         decoration: BoxDecoration(
           color: const Color(0xFF131B2E),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -209,9 +212,9 @@ class _EventPageState extends State<EventPage> {
                       Icon(Icons.location_on_rounded, size: 14, color: event.accentColor),
                       const SizedBox(width: 8),
                       Text(
-                        event.location.length > 20 
-                            ? event.location.substring(0, 17) + "..." 
-                            : event.location, 
+                        event.location.length > 20
+                            ? '${event.location.substring(0, 17)}...'
+                            : event.location,
                         style: GoogleFonts.nunito(color: Colors.white70, fontSize: 13),
                       ),
                     ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/constants/app_colors.dart';
 import '../models/cart_model.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -20,7 +21,7 @@ class CartItemCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1B23),
+        color: AppColors.cardDark,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -52,7 +53,7 @@ class CartItemCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.productName,
-                        style: GoogleFonts.plusJakartaSans(
+                        style: GoogleFonts.nunito(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -78,7 +79,7 @@ class CartItemCard extends StatelessWidget {
                   children: [
                     Text(
                       '\$${item.price.toStringAsFixed(2)}',
-                      style: GoogleFonts.plusJakartaSans(
+                      style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

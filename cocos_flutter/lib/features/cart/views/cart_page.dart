@@ -1,6 +1,11 @@
+// lib/features/cart/views/cart_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/cart_dummy.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/custom_appbar.dart';
+import '../../../core/widgets/custom_navbar.dart';
+import '../../../routes/app_routes.dart';
+import '../data/cart_service.dart';
 import '../tile_widget/cart_item.dart';
 
 class CartPage extends StatefulWidget {
@@ -11,131 +16,196 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  final cart = CartDummyData.dummyCart;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF242830),
-      
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    style: GoogleFonts.plusJakartaSans(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
-                    children: const [
-                      TextSpan(text: 'Your '),
-                      TextSpan(text: 'Cart', style: TextStyle(color: Color(0xFFFF7675))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text('Review your selections before the next convention.', style: TextStyle(color: Colors.white38)),
-                const SizedBox(height: 32),
-                
-                // List Items
-                ...cart.items.asMap().entries.map((entry) {
-                  return CartItemCard(
-                    item: entry.value,
-                    onRemove: () => setState(() => cart.items.removeAt(entry.key)),
-                    onQuantityChanged: (val) => setState(() => entry.value.quantity = val),
-                  );
-                }),
+    final cart = CartService.instance.cart;
+    final items = CartService.instance.items;
 
-                // Flash Deal Banner
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6C5CE7), Color(0xFFa29bfe)]),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8)),
-                        child: const Text('FLASH DEAL', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text('Upgrade Your Gear', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                      const Text('Add a \'Kinetic Core\' for only \$19.99', style: TextStyle(color: Colors.white70)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 200), // Space for bottom sheet
-              ],
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: _buildSummarySection(),
+    return Scaffold(
+      backgroundColor: AppColors.mainBackground,
+      appBar: const CustomAppBar(title: 'My Cart', showBackButton: true),
+      body: items.isEmpty ? _buildEmptyState() : _buildCartContent(items),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (items.isNotEmpty) _buildSummaryBar(cart.total),
+          CustomNavBar(
+            currentIndex: 2,
+            onTap: (index) {
+              if (index == 0) Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (r) => false);
+              if (index == 1) AppRoutes.goToEvents(context);
+              if (index == 3) AppRoutes.goToProfile(context);
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummarySection() {
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.shopping_cart_outlined, color: Colors.white24, size: 80),
+          const SizedBox(height: 24),
+          Text(
+            'Your cart is empty',
+            style: GoogleFonts.nunito(
+              color: AppColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add some costumes to get started!',
+            style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 14),
+          ),
+          const SizedBox(height: 32),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+            label: Text(
+              'Continue Shopping',
+              style: GoogleFonts.nunito(color: AppColors.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCartContent(List items) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              style: GoogleFonts.nunito(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+              children: const [
+                TextSpan(text: 'Your '),
+                TextSpan(text: 'Cart', style: TextStyle(color: AppColors.cartTheme)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Review your selections before the next convention.',
+            style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+
+          // Cart items
+          ...CartService.instance.items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return CartItemCard(
+              item: item,
+              onRemove: () => setState(() => CartService.instance.removeAt(index)),
+              onQuantityChanged: (val) => setState(() => CartService.instance.updateQuantity(index, val)),
+            );
+          }),
+
+          const SizedBox(height: 8),
+
+          // Flash deal banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.deepPurple, Color(0xFFa29bfe)],
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'FLASH DEAL',
+                    style: GoogleFonts.nunito(
+                      color: AppColors.textPrimary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Upgrade Your Gear',
+                  style: GoogleFonts.nunito(
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "Add a 'Kinetic Core' for only \$19.99",
+                  style: GoogleFonts.nunito(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryBar(double total) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1B23), // Background gelap sesuai referensi
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: AppColors.cardDark,
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
       ),
       child: SafeArea(
+        bottom: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Sisi Kiri: Info Total Harga
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Total price',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white38,
-                    fontSize: 12,
-                  ),
+                  style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '\$${cart.total.toStringAsFixed(2)}',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
+                  '\$${total.toStringAsFixed(2)}',
+                  style: GoogleFonts.nunito(
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            
-            // Sisi Kanan: Tombol Checkout yang lonjong
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: const StadiumBorder(), 
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: const StadiumBorder(),
                 elevation: 0,
               ),
-              onPressed: () {},
+              onPressed: () => AppRoutes.goToCheckout(context),
               child: Row(
                 children: [
                   Text(
                     'Checkout',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: GoogleFonts.nunito(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(width: 8),
                   const Icon(Icons.arrow_forward, size: 18),
@@ -147,5 +217,4 @@ class _CartPageState extends State<CartPage> {
       ),
     );
   }
-
 }

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../routes/app_routes.dart';
+import '../../cart/data/cart_service.dart';
 import '../models/product_model.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -238,7 +240,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomActionPanel(),
+      bottomNavigationBar: _buildBottomActionPanel(
+        product,
+        _selectedSize,
+        _selectedMaterial,
+      ),
     );
   }
 
@@ -286,36 +292,75 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget _buildBottomActionPanel() {
+  Widget _buildBottomActionPanel(
+    ProductModel product,
+    String? selectedSize,
+    String? selectedMaterial,
+  ) {
+    void addToCart() {
+      CartService.instance.addProduct(
+        product,
+        size: selectedSize ?? (product.sizes.isNotEmpty ? product.sizes.first : 'M'),
+        material: selectedMaterial ?? (product.materials.isNotEmpty ? product.materials.first : 'Standard'),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF242B35),
+        color: AppColors.cardDark,
         border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
+            // Chat button
+            GestureDetector(
+              onTap: () => AppRoutes.goToChat(context),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.textPrimary),
               ),
-              child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
             ),
             const SizedBox(width: 16),
+            // Add to cart button
             IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.add_shopping_cart_rounded, color: Color(0xFF8B5CF6), size: 28),
+              onPressed: () {
+                addToCart();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${product.name} added to cart',
+                      style: const TextStyle(color: AppColors.textPrimary),
+                    ),
+                    backgroundColor: AppColors.navHeaderBackground,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                    action: SnackBarAction(
+                      label: 'View Cart',
+                      textColor: AppColors.textPrimary,
+                      onPressed: () => AppRoutes.goToCart(context),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add_shopping_cart_rounded, color: AppColors.primary, size: 28),
             ),
             const SizedBox(width: 16),
+            // Checkout button
             Expanded(
               child: CustomButton(
                 text: 'Checkout',
-                color: const Color(0xFF8B5CF6),
-                onPressed: () {},
+                color: AppColors.primary,
+                onPressed: () {
+                  addToCart();
+                  AppRoutes.goToCheckout(context);
+                },
               ),
             ),
           ],
