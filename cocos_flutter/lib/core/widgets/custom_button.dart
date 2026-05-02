@@ -5,6 +5,7 @@ class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final Color? color;
+  final Color? textColor;
   final bool isLoading;
 
   const CustomButton({
@@ -12,6 +13,7 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.color,
+    this.textColor,
     this.isLoading = false,
   });
 
@@ -27,7 +29,10 @@ class CustomButton extends StatelessWidget {
           ? const CircularProgressIndicator(color: Colors.white) 
           : Text(
               text,
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
             ),
       ),
     );
