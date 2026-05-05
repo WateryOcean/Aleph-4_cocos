@@ -10,7 +10,7 @@ class AddressCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: const ListTile(
         leading: Icon(Icons.location_on, color: Color.fromARGB(255, 94, 83, 193)),
-        title: Text('Bintang Kresno', style: TextStyle(fontFamily: 'Unino', color: Colors.white)),
+        title: Text('Bintang Kresno', style: TextStyle(fontFamily: 'Nunito', color: Colors.white)),
         subtitle: Text('Jl. Melati No. 123, Medan, North Sumatra', style: TextStyle(fontFamily: 'Unino', color: Colors.white70)),
         trailing: Icon(Icons.chevron_right),
       ),

@@ -3,7 +3,7 @@ import '../models/order_model.dart';
 
 class OrderDummyData {
   static final List<Order> orders = [
-    // ── UNPAID ──────────────────────────────────────────────────────────────
+    // UNPAID 
     Order(
       id: 'ord-001',
       orderNumber: 'CCS-20241101',
@@ -33,7 +33,7 @@ class OrderDummyData {
       estimatedDate: DateTime(2024, 12, 20),
     ),
 
-    // ── PACKED (in design consultation or production) ─────────────────────
+    // PACKED 
     Order(
       id: 'ord-003',
       orderNumber: 'CCS-20241010',
@@ -63,7 +63,7 @@ class OrderDummyData {
       estimatedDate: DateTime(2024, 11, 10),
     ),
 
-    // ── SHIPPED (quality check or in transit) ────────────────────────────
+    // SHIPPED
     Order(
       id: 'ord-005',
       orderNumber: 'CCS-20240820',
@@ -91,36 +91,6 @@ class OrderDummyData {
       currentStep: 4,
       orderDate: DateTime(2024, 7, 15),
       estimatedDate: DateTime(2024, 9, 1),
-    ),
-
-    // ── BILL (completed, awaiting invoice review) ─────────────────────────
-    Order(
-      id: 'ord-007',
-      orderNumber: 'CCS-20240601',
-      productName: 'One Piece Set',
-      imageUrl: 'assets/product_images/anime_images/onepiece_images/set_onepiece.png',
-      price: 299.00,
-      quantity: 2,
-      selectedSize: 'M',
-      selectedMaterial: 'Premium Fabric',
-      category: OrderCategory.bill,
-      currentStep: 4,
-      orderDate: DateTime(2024, 6, 1),
-      estimatedDate: DateTime(2024, 7, 15),
-    ),
-    Order(
-      id: 'ord-008',
-      orderNumber: 'CCS-20240510',
-      productName: 'Genshin Impact Set',
-      imageUrl: 'assets/product_images/game_images/genshin_images/set_genshin.png',
-      price: 350.00,
-      quantity: 1,
-      selectedSize: 'S',
-      selectedMaterial: 'EVA Foam',
-      category: OrderCategory.bill,
-      currentStep: 4,
-      orderDate: DateTime(2024, 5, 10),
-      estimatedDate: DateTime(2024, 6, 25),
     ),
   ];
 

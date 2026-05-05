@@ -4,7 +4,7 @@ class ChatDummyData {
   static final List<ChatConversation> dummyConversations = [
     ChatConversation(
       id: '1',
-      vendorName: 'Cocos',
+      vendorName: 'CoCos',
       vendorImageUrl: 'https://i.pravatar.cc/150?u=1',
       lastMessage: 'The dragon scale texture is coming along...',
       lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),

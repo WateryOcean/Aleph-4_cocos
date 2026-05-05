@@ -44,4 +44,6 @@ class CartService {
       _items[index].quantity = quantity;
     }
   }
+
+  void clear() => _items.clear();
 }

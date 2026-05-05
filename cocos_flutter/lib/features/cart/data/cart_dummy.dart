@@ -5,7 +5,7 @@ class CartDummyData {
     CartItem(
       id: '1',
       productName: 'Cyber Samurai Armor Set',
-      imageUrl: 'assets/images/product1.png', // Pastikan path ini ada di pubspec.yaml
+      imageUrl: 'assets/images/product1.png', 
       price: 249.99,
       quantity: 1,
       selectedSize: 'L',

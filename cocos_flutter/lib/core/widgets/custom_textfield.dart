@@ -6,6 +6,8 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final IconData? icon;
   final bool isPassword;
+  final TextEditingController? controller;
+  final Function(String)? onChanged;
 
   const CustomTextField({
     super.key,
@@ -13,6 +15,8 @@ class CustomTextField extends StatelessWidget {
     required this.hint,
     this.icon,
     this.isPassword = false,
+    this.controller,
+    this.onChanged,
   });
 
   @override
@@ -26,7 +30,9 @@ class CustomTextField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           obscureText: isPassword,
+          onChanged: onChanged,
           style: GoogleFonts.nunito(),
           decoration: InputDecoration(
             hintText: hint,

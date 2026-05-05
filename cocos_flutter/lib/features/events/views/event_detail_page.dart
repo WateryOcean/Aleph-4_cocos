@@ -1,7 +1,10 @@
-// lib/features/events/views/event_detail_page.dart
+import 'package:cocos_flutter/features/product/data/product_dummy.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../routes/app_routes.dart';
+import '../../product/models/product_model.dart';
+import '../../product/widgets/product_card.dart';
 import '../models/event_model.dart';
 
 class EventDetailPage extends StatelessWidget {
@@ -20,7 +23,7 @@ class EventDetailPage extends StatelessWidget {
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -28,10 +31,6 @@ class EventDetailPage extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        actions: [
-          _buildAppBarAction(Icons.share_outlined),
-          _buildAppBarAction(Icons.favorite_outline_rounded),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -68,43 +67,15 @@ class EventDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionTitle('Recommended Sets'),
-                      Text(
-                        'Explore All',
-                        style: GoogleFonts.nunito(
-                          color: AppColors.eventAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                  _buildSectionTitle('Recommended Sets'),
+                  const SizedBox(height: 24),
                   _buildRecommendationGrid(context),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ],
         ),
-      ),
-      bottomSheet: _buildStickyBottomAction(),
-    );
-  }
-
-  Widget _buildAppBarAction(IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: 20),
-        onPressed: () {},
       ),
     );
   }
@@ -117,7 +88,7 @@ class EventDetailPage extends StatelessWidget {
         children: [
           Image.asset(
             event.imageUrl,
-            fit: BoxFit.contain,
+            fit: BoxFit.contain, 
             errorBuilder: (context, error, stackTrace) => Container(
               color: Colors.white10,
               child: const Icon(Icons.broken_image, color: Colors.white24, size: 60),
@@ -172,8 +143,6 @@ class EventDetailPage extends StatelessWidget {
         _buildInfoCard(Icons.location_on_outlined, 'LOCATION', event.location.split(',').first),
         const SizedBox(width: 12),
         _buildInfoCard(Icons.access_time_outlined, 'TIME', event.time.split(' - ').first),
-        const SizedBox(width: 12),
-        _buildInfoCard(Icons.phone_outlined, 'CONTACT', 'Support Team'),
       ],
     );
   }
@@ -183,7 +152,7 @@ class EventDetailPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white10),
         ),
@@ -221,118 +190,43 @@ class EventDetailPage extends StatelessWidget {
   }
 
   Widget _buildRecommendationGrid(BuildContext context) {
-    List<Map<String, String>> recommendations = [];
-    String cat = event.category.toLowerCase();
-    
-    if (cat.contains('anime') || cat.contains('matsuri')) {
-      recommendations = [
-        {'name': 'One Piece Set', 'price': '\$299.00', 'img': 'assets/product_images/anime_images/onepiece_images/set_onepiece.png'},
-        {'name': 'Demon Slayer Set', 'price': '\$249.00', 'img': 'assets/product_images/anime_images/demonslayer_images/set_demonslayer.png'},
-      ];
-    } else if (cat.contains('game')) {
-      recommendations = [
-        {'name': 'Genshin Impact Set', 'price': '\$350.00', 'img': 'assets/product_images/game_images/genshin_images/set_genshin.png'},
-        {'name': 'Elden Ring Set', 'price': '\$420.00', 'img': 'assets/product_images/game_images/eldenring_images/set_eldenring.png'},
-      ];
-    } else {
-      recommendations = [
-        {'name': 'Harry Potter Set', 'price': '\$189.00', 'img': 'assets/product_images/film_images/harrypott_images/set_harrypott.png'},
-        {'name': 'Star Wars Set', 'price': '\$399.00', 'img': 'assets/product_images/film_images/starwars_images/set_starwars.png'},
-      ];
+    // 1. Get products matching category or 'set_'
+    List<ProductModel> matchingProducts = ProductDummyData.products.where((p) {
+      String cat = event.category.toLowerCase();
+      return p.category.toLowerCase().contains(cat) || p.imagePath.contains('set_');
+    }).toList();
+
+    // 2. Fallback to general products if none match
+    if (matchingProducts.isEmpty) {
+      matchingProducts = List.from(ProductDummyData.products);
     }
+
+    // 3. Shuffle to ensure variety and take the top 2
+    matchingProducts.shuffle();
+    final List<ProductModel> recommendations = matchingProducts.take(2).toList();
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: recommendations.length,
+      padding: EdgeInsets.zero,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 0.75, // Optimized ratio for full costumes
+        childAspectRatio: 0.7,
       ),
       itemBuilder: (context, index) {
-        final char = recommendations[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(8), // Reduced margin to fit better
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: DecorationImage(
-                      image: AssetImage(char['img']!),
-                      fit: BoxFit.contain, // Full visibility of faces and costumes
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
-                child: Text(
-                  char['name']!,
-                  style: GoogleFonts.nunito(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
-                child: Text(
-                  char['price']!,
-                  style: GoogleFonts.nunito(color: AppColors.eventAccent, fontWeight: FontWeight.bold, fontSize: 11),
-                ),
-              ),
-            ],
-          ),
+        final product = recommendations[index];
+        return ProductCard(
+          imagePath: product.imagePath,
+          name: product.name,
+          rating: product.rating,
+          sold: 'Featured', 
+          price: product.price.toStringAsFixed(2),
+          onTap: () => AppRoutes.goToProductDetail(context, product),
         );
       },
-    );
-  }
-
-  Widget _buildStickyBottomAction() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: AppColors.mainBackground,
-        border: Border(top: BorderSide(color: Colors.white10)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.navHeaderBackground,
-                minimumSize: const Size.fromHeight(56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: Text(
-                'Book Your Tickets',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: const Icon(Icons.calendar_today_outlined, color: Colors.white, size: 24),
-          ),
-        ],
-      ),
     );
   }
 }

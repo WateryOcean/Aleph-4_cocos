@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -28,6 +29,8 @@ class _EventPageState extends State<EventPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
         title: Text(
           'Events',
           style: GoogleFonts.nunito(
@@ -36,30 +39,18 @@ class _EventPageState extends State<EventPage> {
             fontSize: 24,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
-            onPressed: () {},
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=user'),
-            ),
-          ),
-        ],
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
-              'Discover gatherings in the cosplay universe.',
+              'Discover gatherings in the cosplay universe',
               style: GoogleFonts.nunito(color: Colors.white54, fontSize: 16),
             ),
           ),
+          
           _buildFilterToggle(),
           Expanded(
             child: ListView.builder(
@@ -88,7 +79,7 @@ class _EventPageState extends State<EventPage> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -108,13 +99,13 @@ class _EventPageState extends State<EventPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.navHeaderBackground : Colors.transparent,
+          color: isSelected ? AppColors.eventAccent : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: GoogleFonts.nunito(
-            color: isSelected ? Colors.white : Colors.white38,
+            color: isSelected ? Colors.black : Colors.white38,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -131,29 +122,30 @@ class _EventPageState extends State<EventPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         decoration: BoxDecoration(
-          color: const Color(0xFF131B2E),
+          color: const Color(0xFF131B2E), 
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               children: [
                 AspectRatio(
-                  aspectRatio: 4 / 5, // Optimized for vertical posters
+                  aspectRatio: 16 / 9, 
                   child: Container(
                     color: Colors.black12,
                     child: Image.asset(
                       event.imageUrl,
-                      fit: BoxFit.contain, // Ensures the full poster is visible
+                      fit: BoxFit.cover, 
                       width: double.infinity,
                       errorBuilder: (context, error, stackTrace) => const Center(
                         child: Icon(Icons.broken_image, color: Colors.white24, size: 40),
@@ -167,8 +159,9 @@ class _EventPageState extends State<EventPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: event.accentColor,
+                      color: event.accentColor.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black.withOpacity(0.3)),
                     ),
                     child: Text(
                       event.category,
@@ -183,6 +176,7 @@ class _EventPageState extends State<EventPage> {
                 ),
               ],
             ),
+
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -191,50 +185,40 @@ class _EventPageState extends State<EventPage> {
                   Text(
                     event.title, 
                     style: GoogleFonts.nunito(
-                      fontSize: 20, 
-                      fontWeight: FontWeight.bold, 
+                      fontSize: 22, 
+                      fontWeight: FontWeight.w900, 
                       color: Colors.white,
-                      height: 1.2,
+                      height: 1.1,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today_rounded, size: 14, color: event.accentColor),
-                      const SizedBox(width: 8),
-                      Text(
-                        event.date, 
-                        style: GoogleFonts.nunito(color: Colors.white70, fontSize: 13),
-                      ),
-                      const Spacer(),
-                      Icon(Icons.location_on_rounded, size: 14, color: event.accentColor),
-                      const SizedBox(width: 8),
-                      Text(
-                        event.location.length > 20
-                            ? '${event.location.substring(0, 17)}...'
-                            : event.location,
-                        style: GoogleFonts.nunito(color: Colors.white70, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                  
+                  _buildDetailRow(Icons.calendar_today_rounded, event.date, event.accentColor),
+                  const SizedBox(height: 8),
+                  
+                  _buildDetailRow(Icons.location_on_rounded, event.location, event.accentColor),
+
+                  const SizedBox(height: 20),
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Details',
+                        'VIEW DETAILS',
                         style: GoogleFonts.nunito(
-                          color: AppColors.navHeaderBackground,
-                          fontWeight: FontWeight.bold,
+                          color: AppColors.eventAccent,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          letterSpacing: 1.0,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: AppColors.navHeaderBackground,
-                        size: 16,
+                        Icons.arrow_forward_ios_rounded,
+                        color: AppColors.eventAccent,
+                        size: 14,
                       ),
                     ],
                   ),
@@ -244,6 +228,27 @@ class _EventPageState extends State<EventPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text, Color accent) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: accent),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text, 
+            style: GoogleFonts.nunito(
+              color: Colors.white70, 
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

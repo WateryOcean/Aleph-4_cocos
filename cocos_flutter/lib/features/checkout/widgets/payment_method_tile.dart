@@ -10,7 +10,7 @@ class PaymentMethodTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return RadioListTile(
       value: title,
-      groupValue: 'Transfer Bank', // Contoh statis
+      groupValue: 'Transfer Bank',
       onChanged: (value) {},
       title: Text(title),
       secondary: Icon(icon),

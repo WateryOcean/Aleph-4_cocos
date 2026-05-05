@@ -7,7 +7,7 @@ class EventModel {
   final String date;
   final String location;
   final String time;
-  final String imageUrl; // Stores the asset path
+  final String imageUrl;
   final String description;
   final String contactInfo;
   final Map<String, String> socialMedia;
