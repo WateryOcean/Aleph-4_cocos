@@ -7,10 +7,12 @@ class OrderService {
   static final OrderService instance = OrderService._();
 
   final List<Order> _orders = [];
-  OrderSummary? _lastCheckoutSummary;
+  final Map<String, OrderSummary> _summaryByOrderId = {};
+
+  OrderSummary? getSummaryForOrderId(String orderId) =>
+      _summaryByOrderId[orderId];
 
   List<Order> get orders => List.unmodifiable(_orders);
-  OrderSummary? get lastCheckoutSummary => _lastCheckoutSummary;
 
   List<Order> byCategory(OrderCategory category) =>
       _orders.where((o) => o.category == category).toList();
@@ -48,8 +50,10 @@ class OrderService {
         estimatedDate: estimated,
       ));
 
+      final billId = 'ord-bill-${now.millisecondsSinceEpoch}-$i';
+
       _orders.add(Order(
-        id: 'ord-bill-${now.millisecondsSinceEpoch}-$i',
+        id: billId,
         orderNumber: num,
         productName: item.productName,
         imageUrl: item.imageUrl,
@@ -62,19 +66,20 @@ class OrderService {
         orderDate: now,
         estimatedDate: estimated,
       ));
-    }
 
-    _lastCheckoutSummary = OrderSummary(
-      items: List.from(cartItems),
-      subtotal: cartItems.fold(0, (sum, item) => sum + item.totalItemPrice),
-      address: ShippingAddress(
-        fullName: name,
-        phoneNumber: phone,
-        addressLine: address,
-        city: city,
-        postalCode: postal,
-      ),
-      paymentMethod: paymentMethod,
-    );
+      // Simpan summary per billId yang unik
+      _summaryByOrderId[billId] = OrderSummary(
+        items: [item],
+        subtotal: item.totalItemPrice,
+        address: ShippingAddress(
+          fullName: name,
+          phoneNumber: phone,
+          addressLine: address,
+          city: city,
+          postalCode: postal,
+        ),
+        paymentMethod: paymentMethod,
+      );
+    }
   }
 }
