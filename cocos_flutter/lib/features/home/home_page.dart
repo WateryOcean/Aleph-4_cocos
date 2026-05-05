@@ -25,6 +25,17 @@ class _HomePageState extends State<HomePage> {
   List<String> _selectedWardrobes = [];
 
   @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    await UserService.instance.loadFromPrefs();
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
