@@ -16,7 +16,7 @@ class CoCosApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       
-      // Aplikasi dimulai dengan SplashScreen, lalu navigasi ke Home Page
+      // Aplikasi dimulai dengan SplashScreen, lalu navigasi ke WelcomeScreen setelahnya
       initialRoute: AppRoutes.splash,
       routes: AppRoutes.routes,
     );
