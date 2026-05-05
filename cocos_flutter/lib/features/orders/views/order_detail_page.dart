@@ -120,13 +120,13 @@ class OrderDetailPage extends StatelessWidget {
 
   Widget _buildHeroImage() {
     return AspectRatio(
-      aspectRatio: 16 / 9,
+      aspectRatio: 1 / 1,
       child: Stack(
         fit: StackFit.expand,
         children: [
           Image.asset(
             order.imageUrl,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             errorBuilder: (context, err, stack) => Container(
               color: AppColors.cardDark,
               child: const Icon(Icons.broken_image,
@@ -356,7 +356,8 @@ class OrderDetailPage extends StatelessWidget {
   }
 
   void _showBillSheet(BuildContext context) {
-    final summary = OrderService.instance.lastCheckoutSummary;
+    var summaryForOrder = OrderService.instance.getSummaryForOrderId(order.id);
+    final summary = summaryForOrder;
     final dateFmt = DateFormat('d MMM yyyy');
 
     showModalBottomSheet(
