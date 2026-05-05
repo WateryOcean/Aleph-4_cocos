@@ -29,6 +29,22 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    await UserService.instance.loadFromPrefs();
+    if (!mounted) return;
+    setState(() {
+      fullName = UserService.instance.fullName.isNotEmpty
+          ? UserService.instance.fullName
+          : 'Andrew Ainsley';
+      username = UserService.instance.username.isNotEmpty
+          ? UserService.instance.username
+          : '@Andrew';
+      gender = UserService.instance.gender;
+      profilePicture = UserService.instance.profilePicture;
+    });
   }
 
   @override
@@ -247,6 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
             context,
             MaterialPageRoute(builder: (_) => const EditProfilePage()),
           );
+          _loadProfile();
         } else if (title == 'Address') {
           Navigator.push(
               context, MaterialPageRoute(builder: (_) => const AddressPage()));

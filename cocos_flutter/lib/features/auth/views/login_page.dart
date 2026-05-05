@@ -1,4 +1,5 @@
 import 'package:cocos_flutter/core/utils/navigation_helper.dart';
+import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -30,7 +31,20 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               OutlinedButton.icon(
-                onPressed: () => AppNavigation.navigateWithLoading(context, AppRoutes.home),
+                onPressed: () async {
+                UserService.instance.setUser(
+                  fullName: 'Aleph-4',
+                  username: '@aleph_cos4er',
+                  email: 'aleph@example.com',
+                  phone: '+1 234 567 890',
+                  gender: 'Male',
+                  profilePicture: 'assets/logo_images/itachi_profile.png',
+                );
+                await UserService.instance.saveToPrefs();
+                if (context.mounted) {
+                  AppNavigation.navigateWithLoading(context, AppRoutes.home);
+                }
+              },
                 icon: Image.asset('assets/logo_images/google_logo.png', height: 20),
                 label: Text('Continue with Google', style: GoogleFonts.nunito(color: AppColors.black, fontSize: 16, fontWeight: FontWeight.w700)),
                 style: OutlinedButton.styleFrom(

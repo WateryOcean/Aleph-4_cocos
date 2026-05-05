@@ -1,4 +1,3 @@
-
 import '../models/checkout_model.dart';
 
 class CheckoutDummyData {
