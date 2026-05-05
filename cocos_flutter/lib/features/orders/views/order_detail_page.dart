@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../checkout/models/checkout_model.dart';
+import '../data/order_service.dart';
 import '../models/order_model.dart';
 
 class OrderDetailPage extends StatelessWidget {
@@ -21,19 +24,6 @@ class OrderDetailPage extends StatelessWidget {
         return AppColors.primary;
       case OrderCategory.bill:
         return AppColors.softMint;
-    }
-  }
-
-  String get _actionLabel {
-    switch (order.category) {
-      case OrderCategory.unpaid:
-        return 'Pay Now';
-      case OrderCategory.packed:
-        return 'Support Center';
-      case OrderCategory.shipped:
-        return 'Track Package';
-      case OrderCategory.bill:
-        return 'View Bill';
     }
   }
 
@@ -54,7 +44,6 @@ class OrderDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Product name & order number ─────────────────────────
                   Text(
                     order.productName,
                     style: GoogleFonts.nunito(
@@ -72,8 +61,6 @@ class OrderDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // ── Info chips ──────────────────────────────────────────
                   Row(
                     children: [
                       _infoChip(
@@ -96,8 +83,6 @@ class OrderDetailPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 32),
-
-                  // ── Timeline ────────────────────────────────────────────
                   Text(
                     'Order Status',
                     style: GoogleFonts.nunito(
@@ -116,12 +101,10 @@ class OrderDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   ...List.generate(
                     kOrderTimeline.length,
                     (i) => _timelineStep(i),
                   ),
-
                   const SizedBox(height: 100),
                 ],
               ),
@@ -129,11 +112,12 @@ class OrderDetailPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomSheet: _bottomAction(context),
+      bottomSheet: order.category == OrderCategory.bill
+          ? _bottomAction(context)
+          : null,
     );
   }
 
-  // ── Hero image with fade-to-background gradient ─────────────────────────
   Widget _buildHeroImage() {
     return AspectRatio(
       aspectRatio: 16 / 9,
@@ -164,7 +148,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ── Small info chip ──────────────────────────────────────────────────────
   Widget _infoChip(IconData icon, String label, String value) {
     return Expanded(
       child: Container(
@@ -203,7 +186,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ── One row in the vertical timeline ────────────────────────────────────
   Widget _timelineStep(int index) {
     final step = kOrderTimeline[index];
     final isDone = index < order.currentStep;
@@ -221,7 +203,6 @@ class OrderDetailPage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Left column: dot + connector line ───────────────────────────
           SizedBox(
             width: 44,
             child: Column(
@@ -260,8 +241,6 @@ class OrderDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-
-          // ── Right column: label + description card ───────────────────────
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
@@ -275,7 +254,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // Highlighted card for the active step
   Widget _currentStepCard(OrderTimelineStep step) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -300,7 +278,8 @@ class OrderDetailPage extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _accent,
                   borderRadius: BorderRadius.circular(8),
@@ -330,7 +309,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // Plain label for done / pending steps
   Widget _plainStepLabel(
       OrderTimelineStep step, bool isDone, bool isPending) {
     return Padding(
@@ -360,7 +338,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ── Sticky bottom action button ──────────────────────────────────────────
   Widget _bottomAction(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
@@ -370,10 +347,239 @@ class OrderDetailPage extends StatelessWidget {
       ),
       child: SafeArea(
         child: CustomButton(
-          text: _actionLabel,
+          text: 'View Bill',
           color: _accent,
-          onPressed: () {},
+          onPressed: () => _showBillSheet(context),
         ),
+      ),
+    );
+  }
+
+  void _showBillSheet(BuildContext context) {
+    final summary = OrderService.instance.lastCheckoutSummary;
+    final dateFmt = DateFormat('d MMM yyyy');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: ListView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            children: [
+              // drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.receipt_long_rounded,
+                      color: AppColors.vividOrange, size: 28),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Order Receipt',
+                    style: GoogleFonts.nunito(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.mainBackground,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text('Order #${order.orderNumber}',
+                  style: GoogleFonts.nunito(
+                      fontSize: 13, color: Colors.black45)),
+              Text(dateFmt.format(order.orderDate),
+                  style: GoogleFonts.nunito(
+                      fontSize: 12, color: Colors.black38)),
+              const Divider(height: 32),
+              Text('Items',
+                  style: GoogleFonts.nunito(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  )),
+              const SizedBox(height: 10),
+              if (summary != null)
+                ...summary.items.map((item) => _billItem(
+                      '${item.quantity}x ${item.productName}',
+                      AppFormatters.formatCurrency(item.totalItemPrice),
+                    ))
+              else
+                _billItem(
+                  '${order.quantity}x ${order.productName}',
+                  AppFormatters.formatCurrency(order.price * order.quantity),
+                ),
+              const Divider(height: 28),
+              _billRow(
+                'Subtotal',
+                AppFormatters.formatCurrency(
+                    summary?.subtotal ?? order.price * order.quantity),
+              ),
+              const SizedBox(height: 8),
+              _billRow('Shipping', 'FREE',
+                  valueColor: const Color(0xFF31B954)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('TOTAL',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.mainBackground)),
+                  Text(
+                    AppFormatters.formatCurrency(
+                        summary?.total ?? order.price * order.quantity),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.vividOrange,
+                    ),
+                  ),
+                ],
+              ),
+              if (summary?.address != null) ...[
+                const Divider(height: 32),
+                Text('Shipping Address',
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black54,
+                    )),
+                const SizedBox(height: 8),
+                _addressTile(summary!.address!),
+              ],
+              if (summary?.paymentMethod != null) ...[
+                const SizedBox(height: 16),
+                Text('Payment Method',
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black54,
+                    )),
+                const SizedBox(height: 8),
+                _paymentTile(summary!.paymentMethod!),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _billItem(String label, String price) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(label,
+                style: GoogleFonts.nunito(
+                    color: AppColors.mainBackground, fontSize: 14)),
+          ),
+          Text(price,
+              style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainBackground)),
+        ],
+      ),
+    );
+  }
+
+  Widget _billRow(String label, String value, {Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: GoogleFonts.nunito(color: Colors.black54, fontSize: 14)),
+        Text(value,
+            style: GoogleFonts.nunito(
+                color: valueColor ?? Colors.black87,
+                fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _addressTile(ShippingAddress addr) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.vividOrange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border:
+            Border.all(color: AppColors.vividOrange.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(addr.fullName.isEmpty ? '—' : addr.fullName,
+              style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainBackground,
+                  fontSize: 13)),
+          if (addr.addressLine.isNotEmpty)
+            Text(addr.addressLine,
+                style:
+                    GoogleFonts.nunito(color: Colors.black54, fontSize: 12)),
+          if (addr.city.isNotEmpty || addr.postalCode.isNotEmpty)
+            Text('${addr.city}, ${addr.postalCode}',
+                style:
+                    GoogleFonts.nunito(color: Colors.black54, fontSize: 12)),
+          if (addr.phoneNumber.isNotEmpty)
+            Text(addr.phoneNumber,
+                style:
+                    GoogleFonts.nunito(color: Colors.black54, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _paymentTile(PaymentMethod method) {
+    final (IconData icon, String label) = switch (method) {
+      PaymentMethod.creditCard =>
+        (Icons.credit_card_rounded, 'Credit / Debit Card'),
+      PaymentMethod.bankTransfer =>
+        (Icons.account_balance_rounded, 'Bank Transfer'),
+      PaymentMethod.digitalWallet =>
+        (Icons.account_balance_wallet_rounded, 'Digital Wallet'),
+    };
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.vividOrange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border:
+            Border.all(color: AppColors.vividOrange.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.vividOrange, size: 18),
+          const SizedBox(width: 10),
+          Text(label,
+              style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainBackground,
+                  fontSize: 13)),
+        ],
       ),
     );
   }

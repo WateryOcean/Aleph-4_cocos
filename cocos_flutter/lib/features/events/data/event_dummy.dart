@@ -51,7 +51,7 @@ class EventDummyData {
     ),
     EventModel(
       id: 'c2',
-      title: 'SATOSHI 2025',
+      title: 'Sawangan Matsuri Harajuku Festival',
       category: 'Anime Festival',
       date: '20 DEC 2025',
       location: 'Raden Wijaya UB, Malang',
@@ -65,7 +65,7 @@ class EventDummyData {
     ),
     EventModel(
       id: 'c3',
-      title: 'Sawangan Matsuri Harajuku Festival',
+      title: 'SATOSHI 2025',
       category: 'Matsuri',
       date: '08 JAN 2023',
       location: 'The Park Sawangan',

@@ -1,8 +1,7 @@
-// lib/features/cart/views/cart_page.dart
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
 import '../data/cart_service.dart';
@@ -23,7 +22,19 @@ class _CartPageState extends State<CartPage> {
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
-      appBar: const CustomAppBar(title: 'My Cart', showBackButton: true),
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Cart',
+          style: GoogleFonts.nunito(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 20,
+          ),
+        ),
+      ),
       body: items.isEmpty ? _buildEmptyState() : _buildCartContent(items),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
@@ -32,7 +43,7 @@ class _CartPageState extends State<CartPage> {
           CustomNavBar(
             currentIndex: 2,
             onTap: (index) {
-              if (index == 0) Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (r) => false);
+              if (index == 0) AppRoutes.loginSuccess(context);
               if (index == 1) AppRoutes.goToEvents(context);
               if (index == 3) AppRoutes.goToProfile(context);
             },
@@ -52,7 +63,7 @@ class _CartPageState extends State<CartPage> {
           Text(
             'Your cart is empty',
             style: GoogleFonts.nunito(
-              color: AppColors.textPrimary,
+              color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -60,15 +71,15 @@ class _CartPageState extends State<CartPage> {
           const SizedBox(height: 8),
           Text(
             'Add some costumes to get started!',
-            style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 14),
+            style: GoogleFonts.nunito(color: Colors.white70, fontSize: 14),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 10),
           TextButton.icon(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+            onPressed: () => AppRoutes.loginSuccess(context),
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.cartTheme),
             label: Text(
               'Continue Shopping',
-              style: GoogleFonts.nunito(color: AppColors.primary, fontWeight: FontWeight.bold),
+              style: GoogleFonts.nunito(color: AppColors.cartTheme, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -84,7 +95,7 @@ class _CartPageState extends State<CartPage> {
         children: [
           RichText(
             text: TextSpan(
-              style: GoogleFonts.nunito(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+              style: GoogleFonts.nunito(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
               children: const [
                 TextSpan(text: 'Your '),
                 TextSpan(text: 'Cart', style: TextStyle(color: AppColors.cartTheme)),
@@ -94,12 +105,12 @@ class _CartPageState extends State<CartPage> {
           const SizedBox(height: 8),
           Text(
             'Review your selections before the next convention.',
-            style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 13),
+            style: GoogleFonts.nunito(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 24),
 
           // Cart items
-          ...CartService.instance.items.asMap().entries.map((entry) {
+          ...items.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
             return CartItemCard(
@@ -110,52 +121,6 @@ class _CartPageState extends State<CartPage> {
           }),
 
           const SizedBox(height: 8),
-
-          // Flash deal banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.deepPurple, Color(0xFFa29bfe)],
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'FLASH DEAL',
-                    style: GoogleFonts.nunito(
-                      color: AppColors.textPrimary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Upgrade Your Gear',
-                  style: GoogleFonts.nunito(
-                    color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  "Add a 'Kinetic Core' for only \$19.99",
-                  style: GoogleFonts.nunito(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -165,8 +130,8 @@ class _CartPageState extends State<CartPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+        color: const Color(0xFF131B2E),
+        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.08))),
       ),
       child: SafeArea(
         bottom: false,
@@ -178,14 +143,14 @@ class _CartPageState extends State<CartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total price',
-                  style: GoogleFonts.nunito(color: AppColors.textSecondary, fontSize: 12),
+                  'Total Price',
+                  style: GoogleFonts.nunito(color: Colors.white70, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '\$${total.toStringAsFixed(2)}',
                   style: GoogleFonts.nunito(
-                    color: AppColors.textPrimary,
+                    color: AppColors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -194,8 +159,8 @@ class _CartPageState extends State<CartPage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textPrimary,
+                backgroundColor: AppColors.cartTheme,
+                foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 shape: const StadiumBorder(),
                 elevation: 0,

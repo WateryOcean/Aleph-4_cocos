@@ -7,6 +7,7 @@ import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
 import '../data/order_dummy.dart';
+import '../data/order_service.dart';
 import '../models/order_model.dart';
 
 class OrderListPage extends StatelessWidget {
@@ -54,7 +55,10 @@ class OrderListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final orders = OrderDummyData.byCategory(category);
+    final orders = [
+      ...OrderService.instance.byCategory(category),
+      ...OrderDummyData.byCategory(category),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
@@ -122,7 +126,7 @@ class OrderListPage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // ── Product info row ──────────────────────────────────────────
+            // Product info row 
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -189,7 +193,7 @@ class OrderListPage extends StatelessWidget {
               ),
             ),
 
-            // ── Progress mini-bar ─────────────────────────────────────────
+            // Progress mini-bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ClipRRect(
@@ -204,7 +208,7 @@ class OrderListPage extends StatelessWidget {
             ),
             const SizedBox(height: 2),
 
-            // ── Status footer ─────────────────────────────────────────────
+            // Status footer
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(

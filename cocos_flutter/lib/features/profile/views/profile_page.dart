@@ -1,69 +1,71 @@
+import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
- 
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_appbar.dart';
+import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
 import '../../orders/models/order_model.dart';
- 
+
 import 'edit_profile_page.dart';
 import 'address_page.dart';
 import 'privacy_policy_page.dart';
 import 'help_center_page.dart';
- 
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
- 
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
- 
+
 class _ProfilePageState extends State<ProfilePage> {
-  String fullName = "Andrew Ainsley";
-  String username = "@Andrew";
-  String gender = "Male";
- 
+  String fullName = '';
+  String username = '';
+  String gender = 'Male';
+  String profilePicture = 'assets/logo_images/itachi_profile.png';
+
   @override
   void initState() {
     super.initState();
-    _loadProfile();
   }
- 
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      fullName = prefs.getString("fullName") ?? "Andrew Ainsley";
-      username = prefs.getString("username") ?? "@Andrew";
-      gender = prefs.getString("gender") ?? "Male";
-    });
-  }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
-      appBar: const CustomAppBar(title: "Profile"),
+      appBar: const CustomAppBar(title: 'Profile'),
+      bottomNavigationBar: CustomNavBar(
+        currentIndex: 3,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, AppRoutes.home, (r) => false);
+          }
+          if (index == 1) AppRoutes.goToEvents(context);
+          if (index == 2) AppRoutes.goToCart(context);
+        },
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 20),
- 
-            // ── Profile Header ───────────────────────────────────────────
+
+            // Profile Header
             Column(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 50,
-                  backgroundImage:
-                      AssetImage('assets/logo_images/itachi_profile.png'),
+                  backgroundImage: AssetImage(profilePicture),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      gender == "Male" ? Icons.male : Icons.female,
-                      color: gender == "Male"
+                      gender == 'Male' ? Icons.male : Icons.female,
+                      color: gender == 'Male'
                           ? AppColors.softMint
                           : AppColors.vividOrange,
                       size: 18,
@@ -85,10 +87,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
- 
+
             const SizedBox(height: 28),
- 
-            // ── Order Status Section ─────────────────────────────────────
+
+            // Order Status Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -107,9 +109,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     decoration: BoxDecoration(
                       color: AppColors.cardDark,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06)),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -133,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           context,
                           icon: Icons.local_shipping_outlined,
                           label: 'Shipped',
-                          color: AppColors.softMint,
+                          color: const Color.fromARGB(255, 70, 193, 162),
                           category: OrderCategory.shipped,
                         ),
                         _dividerV(),
@@ -150,20 +154,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
- 
+
             const SizedBox(height: 24),
- 
-            // ── Settings Card ────────────────────────────────────────────
             _settingsCard(),
- 
             const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
- 
-  // ── Order status icon button ────────────────────────────────────────────
+
   Widget _orderStatusButton(
     BuildContext context, {
     required IconData icon,
@@ -197,16 +197,13 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
- 
-  Widget _dividerV() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: Colors.white.withValues(alpha: 0.08),
-    );
-  }
- 
-  // ── Settings Card ───────────────────────────────────────────────────────
+
+  Widget _dividerV() => Container(
+        height: 40,
+        width: 1,
+        color: Colors.white.withValues(alpha: 0.08),
+      );
+
   Widget _settingsCard() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -216,87 +213,78 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Column(
         children: [
-          _item(Icons.person, "Edit Profile"),
+          _item(Icons.person, 'Edit Profile'),
           _divider(),
-          _item(Icons.location_on, "Address"),
+          _item(Icons.location_on, 'Address'),
           _divider(),
-          _item(Icons.security, "Privacy Policy"),
+          _item(Icons.security, 'Privacy Policy'),
           _divider(),
-          _item(Icons.help, "Help Center"),
+          _item(Icons.help, 'Help Center'),
           _divider(),
-          _item(Icons.logout, "Logout", isLogout: true),
+          _item(Icons.logout, 'Logout', isLogout: true),
         ],
       ),
     );
   }
- 
+
   Widget _divider() => const Divider(color: Colors.white10, height: 1);
- 
+
   Widget _item(IconData icon, String title, {bool isLogout = false}) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isLogout ? Colors.redAccent : AppColors.softMint,
-      ),
+      leading:
+          Icon(icon, color: isLogout ? Colors.redAccent : AppColors.softMint),
       title: Text(
         title,
         style: GoogleFonts.nunito(
-          color: isLogout ? Colors.redAccent : Colors.white,
-        ),
+            color: isLogout ? Colors.redAccent : Colors.white),
       ),
       trailing: isLogout
           ? null
-          : const Icon(Icons.arrow_forward_ios,
-              size: 14, color: Colors.white30),
+          : const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white30),
       onTap: () async {
-        if (title == "Edit Profile") {
+        if (title == 'Edit Profile') {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const EditProfilePage()),
           );
-          _loadProfile();
-        } else if (title == "Address") {
+        } else if (title == 'Address') {
           Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddressPage()),
-          );
-        } else if (title == "Privacy Policy") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
-          );
-        } else if (title == "Help Center") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const HelpCenterPage()),
-          );
-        } else if (title == "Logout") {
+              context, MaterialPageRoute(builder: (_) => const AddressPage()));
+        } else if (title == 'Privacy Policy') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()));
+        } else if (title == 'Help Center') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const HelpCenterPage()));
+        } else if (title == 'Logout') {
           _logoutDialog();
         }
       },
     );
   }
- 
+
   void _logoutDialog() {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.cardDark,
-        title: const Text("Logout", style: TextStyle(color: Colors.white)),
-        content: const Text("Are you sure?",
+        title:
+            const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure?',
             style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              Navigator.pop(context);
+              await UserService.instance.signOut();
+              if (mounted) AppRoutes.goToLogin(context);
             },
-            child:
-                const Text("Logout", style: TextStyle(color: Colors.redAccent)),
+            child: const Text('Logout',
+                style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),

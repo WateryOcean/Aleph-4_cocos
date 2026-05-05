@@ -14,6 +14,7 @@ import 'package:cocos_flutter/features/home/special_offers_page.dart';
 import 'package:cocos_flutter/features/orders/models/order_model.dart';
 import 'package:cocos_flutter/features/orders/views/order_detail_page.dart';
 import 'package:cocos_flutter/features/orders/views/order_list_page.dart';
+import 'package:cocos_flutter/features/product/models/product_model.dart';
 import 'package:cocos_flutter/features/product/views/product_detail_page.dart';
 import 'package:cocos_flutter/features/profile/views/profile_page.dart';
 import 'package:cocos_flutter/features/search/views/search_page.dart';
@@ -80,7 +81,7 @@ class AppRoutes {
     ),
   };
  
-  // ── Navigation Helpers ──────────────────────────────────────────────────
+  // Navigation Helpers
  
   static void goToWelcome1(BuildContext context) {
     Navigator.pushReplacementNamed(context, welcome1);
@@ -112,6 +113,10 @@ class AppRoutes {
  
   static void goToSpecialOffers(BuildContext context) {
     Navigator.pushNamed(context, specialOffers);
+  }
+
+  static void goToProductDetail(BuildContext context, ProductModel product) {
+    Navigator.pushNamed(context, productDetail, arguments: product);
   }
  
   static void goToProfile(BuildContext context) {

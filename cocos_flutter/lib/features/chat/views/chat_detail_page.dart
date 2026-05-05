@@ -1,7 +1,9 @@
+import 'package:cocos_flutter/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/chat_model.dart';
 import '../data/chat_dummy.dart';
+import '../../auth/data/user_service.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final ChatConversation conversation;
@@ -45,7 +47,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         centerTitle: false,
         // Tombol Undo untuk kembali ke halaman sebelumnya
         leading: IconButton(
-          icon: const Icon(Icons.undo, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         titleSpacing: 0,
@@ -72,7 +74,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     TextSpan(
                       text: '',
                       style: GoogleFonts.nunito(
-                        color: const Color(0xFF6C5CE7), // Warna ungu untuk teks Chat
+                        color: AppColors.deepPurple, // Warna ungu untuk teks Chat
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -107,11 +109,20 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   Widget _buildChatBubbleWithProfile(ChatMessage msg) {
-    // Identitas Pengirim (Sesuai User Summary & Referensi Gambar)
-    final String senderName = msg.isMe ? "Bintang Kresno Hadi" : widget.conversation.vendorName;
+    // Get current user info from AuthDummyData
+    final String senderName = msg.isMe ? UserService.instance.username : widget.conversation.vendorName;
     final String senderAvatar = msg.isMe 
-        ? "https://i.pravatar.cc/150?u=bintang" 
+        ? UserService.instance.profilePicture
         : widget.conversation.vendorImageUrl;
+
+    // Helper to determine if image is local asset or network
+    ImageProvider getImageProvider(String imagePath) {
+      if (imagePath.startsWith('assets/')) {
+        return AssetImage(imagePath);
+      } else {
+        return NetworkImage(imagePath);
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
@@ -120,7 +131,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         mainAxisAlignment: msg.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!msg.isMe) ...[
-            CircleAvatar(radius: 18, backgroundImage: NetworkImage(senderAvatar)),
+            CircleAvatar(radius: 18, backgroundImage: getImageProvider(senderAvatar)),
             const SizedBox(width: 12),
           ],
           Flexible(
@@ -155,7 +166,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           ),
           if (msg.isMe) ...[
             const SizedBox(width: 12),
-            CircleAvatar(radius: 18, backgroundImage: NetworkImage(senderAvatar)),
+            CircleAvatar(radius: 18, backgroundImage: getImageProvider(senderAvatar)),
           ],
         ],
       ),

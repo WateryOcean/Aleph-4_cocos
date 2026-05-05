@@ -1,6 +1,5 @@
-// lib/features/home/home_page.dart
 // ignore_for_file: curly_braces_in_flow_control_structures, deprecated_member_use
-import 'package:cocos_flutter/features/auth/data/auth_dummy.dart';
+import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:cocos_flutter/features/product/data/product_dummy.dart';
 import 'package:cocos_flutter/features/product/widgets/product_card.dart';
 import 'package:cocos_flutter/features/search/models/search_model.dart';
@@ -31,7 +30,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // --- LOGIC: CATEGORY NAVIGATION (Updated for Prefix Keywords) ---
+  // CATEGORY NAVIGATION 
   void _onCategoryPressed(String category) {
     String prefix = '';
     if (category == 'Clothes') {
@@ -44,10 +43,11 @@ class _HomePageState extends State<HomePage> {
       prefix = '4_';
     }
 
-    // Navigates to search page using the asset prefix as the keyword
+    // Navigates ke search page dengan keyword yang sudah diprefiks sesuai kategori, misal "1_" untuk Clothes, "2_" untuk Accessories, dst.
     AppRoutes.goToSearch(context, keyword: prefix);
   }
 
+  // Filter  dengan Modal Bottom Sheet
   void _showFilterModal() {
     List<String> tempGenres = List.from(_selectedGenres);
     List<String> tempWardrobes = List.from(_selectedWardrobes);
@@ -239,9 +239,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Tampilan utama
   @override
   Widget build(BuildContext context) {
-    final user = AuthDummyData.currentUser;
+    final user = UserService.instance;
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
@@ -342,8 +343,7 @@ class _HomePageState extends State<HomePage> {
               child: PageView(
                 children: [
                   _buildOfferCard('assets/offer_images/offer_1.png'),
-                  _buildOfferCard('assets/offer_images/offer_2.png'),
-                  _buildOfferCard('assets/offer_images/offer_3.png'),
+                  _buildOfferCard('assets/offer_images/offer_2.png')
                 ],
               ),
             ),
@@ -468,7 +468,7 @@ class _HomePageState extends State<HomePage> {
       imagePath: product.imagePath,
       name: product.name,
       rating: product.rating,
-      sold: '124 Sold',
+      sold: '50+ sold',
       price: product.price.toString(),
       onTap: () => Navigator.pushNamed(
         context,
