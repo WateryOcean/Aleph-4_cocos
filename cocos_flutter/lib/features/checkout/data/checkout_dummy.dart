@@ -1,3 +1,4 @@
+// ignore: unused_import
 import '../models/checkout_model.dart';
 
 class CheckoutDummyData {
