@@ -44,6 +44,8 @@ dependencies:
   firebase_core: 
   firebase_auth: ^6.5.2
   cloud_firestore: 6.5.0
+  sqflite: 
+  connectivity_plus: 
 
 
 dev_dependencies:
