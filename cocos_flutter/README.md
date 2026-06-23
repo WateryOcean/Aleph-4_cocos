@@ -94,14 +94,110 @@ flutter build ipa
 flutter build web
 ```
 
-## Struktur Proyek (ringkas)
-- `lib/` — kode sumber utama
-	- `main.dart` — entry point aplikasi ([lib/main.dart](lib/main.dart))
-	- `core/` — konstanta, tema, utilitas, widget bersama
-	- `features/` — modul fitur (auth, cart, chat, product, dsb.)
+## Struktur Proyek (Lengkap)
+
+### /lib — Kode Sumber Utama
+
+```
+lib/
+├── main.dart                          # Entry point aplikasi
+├── routes/
+│   └── app_routes.dart               # Definisi rute aplikasi
+├── core/                              # Shared resources dan utilities
+│   ├── constants/
+│   │   ├── app_colors.dart          # Palet warna aplikasi
+│   │   ├── app_strings.dart         # String constants
+│   │   └── enums.dart               # Enum definitions
+│   ├── theme/
+│   │   └── app_theme.dart           # Konfigurasi tema global
+│   ├── utils/
+│   │   ├── formatters.dart          # Formatter utilities
+│   │   ├── helpers.dart             # Helper functions
+│   │   └── navigation_helper.dart   # Navigation utilities
+│   └── widgets/                      # Reusable widgets
+│       ├── custom_appbar.dart       # Custom AppBar
+│       ├── custom_button.dart       # Custom button component
+│       ├── custom_navbar.dart       # Custom navigation bar
+│       ├── custom_textfield.dart    # Custom text input field
+│       └── loading_indicator.dart   # Loading indicator widget
+│
+└── features/                          # Feature-based modules
+    ├── auth/                          # Authentication
+    │   ├── data/
+    │   │   ├── auth_dummy.dart
+    │   │   └── user_service.dart
+    │   ├── models/
+    │   │   └── user_model.dart
+    │   ├── views/
+    │   │   ├── login_page.dart
+    │   │   ├── register_page.dart
+    │   │   └── signin_page.dart
+    │   └── widgets/
+    │       ├── auth_text_field.dart
+    │       └── social_login_button.dart
+    │
+    ├── cart/                         # Shopping cart
+    │   ├── data/
+    │   ├── models/
+    │   ├── tile_widget/
+    │   └── views/
+    │
+    ├── chat/                         # Chat & messaging
+    │   ├── data/
+    │   ├── models/
+    │   └── views/
+    │
+    ├── checkout/                     # Checkout process
+    │   ├── data/
+    │   ├── models/
+    │   ├── view/
+    │   └── widgets/
+    │
+    ├── events/                       # Events listing & details
+    │   ├── data/
+    │   ├── models/
+    │   └── views/
+    │
+    ├── home/                         # Home screen
+    │   ├── home_page.dart
+    │   └── special_offers_page.dart
+    │
+    ├── orders/                       # Order history & tracking
+    │   ├── data/
+    │   ├── models/
+    │   └── views/
+    │
+    ├── product/                      # Product catalog & details
+    │   ├── data/
+    │   │   └── product_dummy.dart
+    │   ├── models/
+    │   │   └── product_model.dart
+    │   ├── views/
+    │   │   └── product_detail_page.dart
+    │   └── widgets/
+    │       └── product_card.dart
+    │
+    ├── profile/                      # User profile
+    │   ├── views/
+    │   └── widgets/
+    │
+    ├── search/                       # Product search
+    │   ├── models/
+    │   ├── views/
+    │   └── widgets/
+    │
+    └── welcome/                      # Welcome screens
+        ├── splash_page.dart
+        ├── welcome_page1.dart
+        ├── welcome_page2.dart
+        └── welcome_page3.dart
+```
+
+### Struktur Proyek Global
 - `assets/` — gambar dan aset statis (lihat `assets/`)
 - `android/`, `ios/`, `web/`, `linux/`, `macos/`, `windows/` — folder platform native
 - `pubspec.yaml` — deklarasi dependensi dan aset ([pubspec.yaml](pubspec.yaml))
+- `test/` — unit dan widget tests
 
 ## Aset dan Lokalisasi
 - Semua aset gambar berada di folder `assets/` (mis. `assets/product_images/`).
