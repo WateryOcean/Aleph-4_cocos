@@ -11,6 +11,25 @@ menjalankan, dan membangun proyek hingga tahap sekarang.
 - **Entry point:** [lib/main.dart](lib/main.dart)
 - **Manajemen dependensi:** [pubspec.yaml](pubspec.yaml)
 
+## 🤖 Quick Agent Brief (untuk AI agents)
+**Untuk mempelajari codebase ini, agent harus memahami:**
+
+1. **Arsitektur:** Feature-based modular structure (setiap fitur di `lib/features/{feature}/` dengan subfolder: `data/`, `models/`, `views/`, `widgets/`)
+2. **Core utilities:** Shared resources ada di `lib/core/` (constants, theme, utils, reusable widgets)
+3. **Key files:**
+   - Entry point: `lib/main.dart` (app setup dan routing)
+   - Routes: `lib/routes/app_routes.dart` (navigasi aplikasi)
+   - Theme: `lib/core/theme/app_theme.dart` (styling global)
+4. **Features utama:** auth (login), product (katalog), cart (keranjang), checkout, events, chat, profile, orders
+5. **Assets:** Semua aset gambar di `lib/assets/` dengan subfolder berdasarkan tipe (product_images/, event_images/, dll)
+6. **Testing:** Lihat `test/widget_test.dart` untuk contoh dan jalankan `flutter test`
+
+**Untuk PR baru atau perubahan besar:**
+- Ikuti struktur feature-based yang ada
+- Update routes di `app_routes.dart` jika menambah halaman baru
+- Daftarkan aset baru di `pubspec.yaml` bagian `flutter.assets`
+- Ikuti naming convention: snake_case untuk files, PascalCase untuk classes
+
 ## Fitur Utama
 - Autentikasi pengguna (folder: `lib/features/auth`)
 - Keranjang dan proses checkout (`lib/features/cart`, `lib/features/checkout`)
