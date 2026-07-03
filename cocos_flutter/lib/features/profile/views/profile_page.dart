@@ -1,13 +1,12 @@
-import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../orders/models/order_model.dart';
-
 import 'edit_profile_page.dart';
 import 'address_page.dart';
 import 'privacy_policy_page.dart';
@@ -21,37 +20,25 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String fullName = '';
-  String username = '';
-  String gender = 'Male';
-  String profilePicture = 'assets/logo_images/itachi_profile.png';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    await UserService.instance.loadFromPrefs();
-    if (!mounted) return;
-    setState(() {
-      fullName = UserService.instance.fullName.isNotEmpty
-          ? UserService.instance.fullName
-          : 'Andrew Ainsley';
-      username = UserService.instance.username.isNotEmpty
-          ? UserService.instance.username
-          : '@Andrew';
-      gender = UserService.instance.gender;
-      profilePicture = UserService.instance.profilePicture;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
+
+    final String fullName = user?.fullName ?? 'Andrew Ainsley';
+    final String username = user?.username.isNotEmpty == true
+        ? user!.username
+        : '@Andrew';
+    final String gender = user?.gender ?? 'Male';
+    final String profilePicture = user?.profilePicture ??
+        'assets/logo_images/itachi_profile.png';
+
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
-      appBar: const CustomAppBar(title: 'Profile'),
+      appBar: CustomAppBar(
+        title: 'Profile',
+        showBackButton: false, // <-- Hilangkan tombol kembali
+      ),
       bottomNavigationBar: CustomNavBar(
         currentIndex: 3,
         onTap: (index) {
@@ -68,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const SizedBox(height: 20),
 
-            // Profile Header
+            // Header Profil
             Column(
               children: [
                 CircleAvatar(
@@ -106,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 28),
 
-            // Order Status Section
+            // Bagian Status Pesanan
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -172,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             const SizedBox(height: 24),
-            _settingsCard(),
+            _settingsCard(context, authProvider),
             const SizedBox(height: 40),
           ],
         ),
@@ -220,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
         color: Colors.white.withValues(alpha: 0.08),
       );
 
-  Widget _settingsCard() {
+  Widget _settingsCard(BuildContext context, AuthProvider authProvider) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
@@ -229,15 +216,15 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Column(
         children: [
-          _item(Icons.person, 'Edit Profile'),
+          _item(Icons.person, 'Edit Profile', context),
           _divider(),
-          _item(Icons.location_on, 'Address'),
+          _item(Icons.location_on, 'Address', context),
           _divider(),
-          _item(Icons.security, 'Privacy Policy'),
+          _item(Icons.security, 'Privacy Policy', context),
           _divider(),
-          _item(Icons.help, 'Help Center'),
+          _item(Icons.help, 'Help Center', context),
           _divider(),
-          _item(Icons.logout, 'Logout', isLogout: true),
+          _item(Icons.logout, 'Logout', context, isLogout: true, authProvider: authProvider),
         ],
       ),
     );
@@ -245,7 +232,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _divider() => const Divider(color: Colors.white10, height: 1);
 
-  Widget _item(IconData icon, String title, {bool isLogout = false}) {
+  Widget _item(IconData icon, String title, BuildContext context,
+      {bool isLogout = false, AuthProvider? authProvider}) {
     return ListTile(
       leading:
           Icon(icon, color: isLogout ? Colors.redAccent : AppColors.softMint),
@@ -263,7 +251,6 @@ class _ProfilePageState extends State<ProfilePage> {
             context,
             MaterialPageRoute(builder: (_) => const EditProfilePage()),
           );
-          _loadProfile();
         } else if (title == 'Address') {
           Navigator.push(
               context, MaterialPageRoute(builder: (_) => const AddressPage()));
@@ -274,19 +261,18 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(context,
               MaterialPageRoute(builder: (_) => const HelpCenterPage()));
         } else if (title == 'Logout') {
-          _logoutDialog();
+          _logoutDialog(context, authProvider!);
         }
       },
     );
   }
 
-  void _logoutDialog() {
+  void _logoutDialog(BuildContext context, AuthProvider authProvider) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.cardDark,
-        title:
-            const Text('Logout', style: TextStyle(color: Colors.white)),
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
         content: const Text('Are you sure?',
             style: TextStyle(color: Colors.white70)),
         actions: [
@@ -297,8 +283,8 @@ class _ProfilePageState extends State<ProfilePage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await UserService.instance.signOut();
-              if (mounted) AppRoutes.goToLogin(context);
+              await authProvider.logout();
+              if (context.mounted) AppRoutes.goToLogin(context);
             },
             child: const Text('Logout',
                 style: TextStyle(color: Colors.redAccent)),

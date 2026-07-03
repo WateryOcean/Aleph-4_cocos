@@ -1,8 +1,9 @@
-import 'package:cocos_flutter/features/auth/data/user_service.dart';
+import 'package:cocos_flutter/features/auth/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../auth/data/user_service.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -26,26 +27,63 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<void> _loadData() async {
-    await UserService.instance.loadFromPrefs();
-    setState(() {
-      fullName.text = UserService.instance.fullName;
-      username.text = UserService.instance.username;
-      email.text = UserService.instance.email;
-      phone.text = UserService.instance.phone;
-      gender = UserService.instance.gender;
-    });
+    // Ambil dari AuthProvider (yang memiliki data terbaru)
+    final authProvider = context.read<AuthProvider>();
+    final user = authProvider.user;
+
+    if (user != null) {
+      setState(() {
+        fullName.text = user.fullName;
+        username.text = user.username;
+        email.text = user.email;
+        phone.text = user.phoneNumber;
+        gender = user.gender;
+      });
+    } else {
+      // Alternatif ke UserService jika AuthProvider belum siap
+      await UserService.instance.loadFromPrefs();
+      setState(() {
+        fullName.text = UserService.instance.fullName;
+        username.text = UserService.instance.username;
+        email.text = UserService.instance.email;
+        phone.text = UserService.instance.phone;
+        gender = UserService.instance.gender;
+      });
+    }
   }
 
   Future<void> _saveData() async {
-    UserService.instance.setUser(
-      fullName: fullName.text,
-      username: username.text,
-      email: email.text,
-      phone: phone.text,
+    final authProvider = context.read<AuthProvider>();
+    final currentUser = authProvider.user;
+
+    if (currentUser == null) {
+      // Alternatif: simpan hanya ke UserService jika tidak ada user yang login
+      UserService.instance.setUser(
+        fullName: fullName.text,
+        username: username.text,
+        email: email.text,
+        phone: phone.text,
+        gender: gender,
+        profilePicture: UserService.instance.profilePicture,
+      );
+      await UserService.instance.saveToPrefs();
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+
+    // Buat model user yang sudah diperbarui
+    final updatedUser = currentUser.copyWith(
+      fullName: fullName.text.trim(),
+      username: username.text.trim(),
+      email: email.text.trim(),
+      phoneNumber: phone.text.trim(),
       gender: gender,
-      profilePicture: UserService.instance.profilePicture,
+      // profilePicture tidak diubah (dapat diperbarui nanti)
     );
-    await UserService.instance.saveToPrefs();
+
+    // Simpan melalui AuthProvider (memperbarui Firestore + SharedPreferences + state lokal)
+    await authProvider.updateUserProfile(updatedUser);
+
     if (mounted) Navigator.pop(context);
   }
 
@@ -99,8 +137,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     borderRadius: BorderRadius.circular(30)),
               ),
               onPressed: _saveData,
-              child: const Text('Update',
-                  style: TextStyle(color: Colors.white, fontSize: 14)),
+              child: const Text(
+                'Update',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
             ),
           ],
         ),
@@ -108,8 +148,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _input(
-      TextEditingController controller, String hint, IconData icon) {
+  Widget _input(TextEditingController controller, String hint, IconData icon) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -154,11 +193,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: Column(
                 children: [
                   Icon(Icons.male,
-                      color:
-                          gender == 'Male' ? Colors.white : Colors.white54),
+                      color: gender == 'Male' ? Colors.white : Colors.white54),
                   const SizedBox(height: 4),
-                  const Text('Male',
-                      style: TextStyle(color: Colors.white)),
+                  const Text('Male', style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),
@@ -179,12 +216,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: Column(
                 children: [
                   Icon(Icons.female,
-                      color: gender == 'Female'
-                          ? Colors.white
-                          : Colors.white54),
+                      color: gender == 'Female' ? Colors.white : Colors.white54),
                   const SizedBox(height: 4),
-                  const Text('Female',
-                      style: TextStyle(color: Colors.white)),
+                  const Text('Female', style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),

@@ -120,7 +120,7 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
     return Scaffold(
       backgroundColor: AppColors.darkSlate,
 
-      /// APPBAR
+      /// APPBAR (BILAH APLIKASI)
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -187,7 +187,7 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
 
             const SizedBox(height: 20),
 
-            /// FAQ LIST
+            /// DAFTAR FAQ
             Expanded(
               child: ListView.builder(
                 itemCount: filteredFaq.length,

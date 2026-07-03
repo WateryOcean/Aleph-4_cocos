@@ -10,7 +10,7 @@ class AppTheme {
       primaryColor: AppColors.navHeaderBackground,
       scaffoldBackgroundColor: AppColors.mainBackground,
       
-      // Font Configuration dengan Google Fonts
+      // Konfigurasi font dengan Google Fonts
       textTheme: GoogleFonts.nunitoTextTheme(
         const TextTheme(
           displayLarge: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),

@@ -3,7 +3,7 @@ import '../models/order_model.dart';
 
 class OrderDummyData {
   static final List<Order> orders = [
-    // UNPAID 
+    // BELUM DIBAYAR
     Order(
       id: 'ord-001',
       orderNumber: 'CCS-20241101',
@@ -33,7 +33,7 @@ class OrderDummyData {
       estimatedDate: DateTime(2024, 12, 20),
     ),
 
-    // PACKED 
+    // DIKEMAS
     Order(
       id: 'ord-003',
       orderNumber: 'CCS-20241010',
@@ -63,7 +63,7 @@ class OrderDummyData {
       estimatedDate: DateTime(2024, 11, 10),
     ),
 
-    // SHIPPED
+    // DIKIRIM
     Order(
       id: 'ord-005',
       orderNumber: 'CCS-20240820',

@@ -36,6 +36,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onBackPressed ?? () => Navigator.pop(context),
             )
           : null,
+      automaticallyImplyLeading: false,
       actions: actions,
     );
   }

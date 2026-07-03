@@ -1,14 +1,15 @@
-// lib/features/orders/views/order_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../checkout/models/checkout_model.dart';
-import '../data/order_service.dart';
 import '../models/order_model.dart';
+import '../providers/order_provider.dart';
 
 class OrderDetailPage extends StatelessWidget {
   final Order order;
@@ -30,6 +31,7 @@ class OrderDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat('d MMM yyyy');
+    final userId = context.read<AuthProvider>().user?.id ?? 'guest_user';
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
@@ -114,6 +116,25 @@ class OrderDetailPage extends StatelessWidget {
       ),
       bottomSheet: order.category == OrderCategory.bill
           ? _bottomAction(context)
+          : null,
+      floatingActionButton: order.currentStep < kOrderTimeline.length - 1
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final nextStep = order.currentStep + 1;
+                await context.read<OrderProvider>().updateOrderStep(
+                      userId,
+                      order.id,
+                      nextStep,
+                    );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Next Step'),
+              backgroundColor: _accent,
+              foregroundColor: Colors.white,
+            )
           : null,
     );
   }
@@ -356,8 +377,6 @@ class OrderDetailPage extends StatelessWidget {
   }
 
   void _showBillSheet(BuildContext context) {
-    var summaryForOrder = OrderService.instance.getSummaryForOrderId(order.id);
-    final summary = summaryForOrder;
     final dateFmt = DateFormat('d MMM yyyy');
 
     showModalBottomSheet(
@@ -377,7 +396,6 @@ class OrderDetailPage extends StatelessWidget {
             controller: controller,
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
             children: [
-              // drag handle
               Center(
                 child: Container(
                   width: 40,
@@ -419,21 +437,14 @@ class OrderDetailPage extends StatelessWidget {
                     color: Colors.black54,
                   )),
               const SizedBox(height: 10),
-              if (summary != null)
-                ...summary.items.map((item) => _billItem(
-                      '${item.quantity}x ${item.productName}',
-                      AppFormatters.formatCurrency(item.totalItemPrice),
-                    ))
-              else
-                _billItem(
-                  '${order.quantity}x ${order.productName}',
-                  AppFormatters.formatCurrency(order.price * order.quantity),
-                ),
+              _billItem(
+                '${order.quantity}x ${order.productName}',
+                AppFormatters.formatCurrency(order.price * order.quantity),
+              ),
               const Divider(height: 28),
               _billRow(
                 'Subtotal',
-                AppFormatters.formatCurrency(
-                    summary?.subtotal ?? order.price * order.quantity),
+                AppFormatters.formatCurrency(order.price * order.quantity),
               ),
               const SizedBox(height: 8),
               _billRow('Shipping', 'FREE',
@@ -447,8 +458,7 @@ class OrderDetailPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: AppColors.mainBackground)),
                   Text(
-                    AppFormatters.formatCurrency(
-                        summary?.total ?? order.price * order.quantity),
+                    AppFormatters.formatCurrency(order.price * order.quantity),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -457,7 +467,7 @@ class OrderDetailPage extends StatelessWidget {
                   ),
                 ],
               ),
-              if (summary?.address != null) ...[
+              if (order.shippingAddress != null) ...[
                 const Divider(height: 32),
                 Text('Shipping Address',
                     style: GoogleFonts.nunito(
@@ -466,9 +476,9 @@ class OrderDetailPage extends StatelessWidget {
                       color: Colors.black54,
                     )),
                 const SizedBox(height: 8),
-                _addressTile(summary!.address!),
+                _addressTile(order.shippingAddress!),
               ],
-              if (summary?.paymentMethod != null) ...[
+              if (order.paymentMethod != null) ...[
                 const SizedBox(height: 16),
                 Text('Payment Method',
                     style: GoogleFonts.nunito(
@@ -477,7 +487,7 @@ class OrderDetailPage extends StatelessWidget {
                       color: Colors.black54,
                     )),
                 const SizedBox(height: 8),
-                _paymentTile(summary!.paymentMethod!),
+                _paymentTile(order.paymentMethod!),
               ],
             ],
           ),
@@ -532,7 +542,7 @@ class OrderDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(addr.fullName.isEmpty ? '—' : addr.fullName,
+          Text(addr.recipientName.isEmpty ? '—' : addr.recipientName,
               style: GoogleFonts.nunito(
                   fontWeight: FontWeight.bold,
                   color: AppColors.mainBackground,

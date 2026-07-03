@@ -1,6 +1,7 @@
-import 'package:cocos_flutter/features/product/data/product_dummy.dart';
+import 'package:cocos_flutter/features/product/providers/product_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../product/models/product_model.dart';
@@ -190,18 +191,20 @@ class EventDetailPage extends StatelessWidget {
   }
 
   Widget _buildRecommendationGrid(BuildContext context) {
-    // 1. Get products matching category or 'set_'
-    List<ProductModel> matchingProducts = ProductDummyData.products.where((p) {
+    final allProducts = context.watch<ProductProvider>().products;
+
+    // 1. Ambil produk yang cocok dengan kategori atau mengandung 'set_'
+    List<ProductModel> matchingProducts = allProducts.where((p) {
       String cat = event.category.toLowerCase();
       return p.category.toLowerCase().contains(cat) || p.imagePath.contains('set_');
     }).toList();
 
-    // 2. Fallback to general products if none match
+    // 2. Fallback ke produk umum jika tidak ada yang cocok
     if (matchingProducts.isEmpty) {
-      matchingProducts = List.from(ProductDummyData.products);
+      matchingProducts = List.from(allProducts);
     }
 
-    // 3. Shuffle to ensure variety and take the top 2
+    // 3. Acak untuk memastikan variasi, lalu ambil 2 teratas
     matchingProducts.shuffle();
     final List<ProductModel> recommendations = matchingProducts.take(2).toList();
 

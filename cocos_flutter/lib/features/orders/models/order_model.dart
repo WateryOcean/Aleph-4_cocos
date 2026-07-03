@@ -1,5 +1,7 @@
 // lib/features/orders/models/order_model.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../checkout/models/checkout_model.dart';
 
 enum OrderCategory { unpaid, packed, shipped, bill }
 
@@ -56,6 +58,10 @@ class Order {
   final DateTime orderDate;
   final DateTime estimatedDate;
 
+  // Baru: field alamat dan metode pembayaran
+  final ShippingAddress? shippingAddress;
+  final PaymentMethod? paymentMethod;
+
   Order({
     required this.id,
     required this.orderNumber,
@@ -69,8 +75,73 @@ class Order {
     required this.currentStep,
     required this.orderDate,
     required this.estimatedDate,
+    this.shippingAddress,
+    this.paymentMethod,
   });
 
   OrderTimelineStep get currentStepData => kOrderTimeline[currentStep];
   bool get isCompleted => currentStep == kOrderTimeline.length - 1;
+
+  // ─── Pembantu JSON ──────────────────────────────────────────────
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'order_number': orderNumber,
+      'product_name': productName,
+      'image_url': imageUrl,
+      'price': price,
+      'quantity': quantity,
+      'selected_size': selectedSize,
+      'selected_material': selectedMaterial,
+      'category': category.name,
+      'current_step': currentStep,
+      'order_date': orderDate.toIso8601String(),
+      'estimated_date': estimatedDate.toIso8601String(),
+      if (shippingAddress != null) 'shipping_address': shippingAddress!.toJson(),
+      if (paymentMethod != null) 'payment_method': paymentMethod!.name,
+    };
+  }
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    final categoryStr = json['category'] as String? ?? '';
+    final category = OrderCategory.values.firstWhere(
+      (e) => e.name == categoryStr,
+      orElse: () => OrderCategory.unpaid,
+    );
+
+    final rawShippingAddress = json['shipping_address'];
+    final shippingAddress = rawShippingAddress == null
+        ? null
+        : ShippingAddress.fromJson(
+            rawShippingAddress is String
+                ? jsonDecode(rawShippingAddress) as Map<String, dynamic>
+                : rawShippingAddress as Map<String, dynamic>,
+          );
+
+    PaymentMethod? paymentMethod;
+    if (json['payment_method'] != null) {
+      paymentMethod = PaymentMethod.values.firstWhere(
+        (e) => e.name == json['payment_method'],
+        orElse: () => PaymentMethod.creditCard,
+      );
+    }
+
+    return Order(
+      id: json['id'] ?? '',
+      orderNumber: json['order_number'] ?? '',
+      productName: json['product_name'] ?? '',
+      imageUrl: json['image_url'] ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      selectedSize: json['selected_size'] ?? '',
+      selectedMaterial: json['selected_material'] ?? '',
+      category: category,
+      currentStep: (json['current_step'] as num?)?.toInt() ?? 0,
+      orderDate: DateTime.tryParse(json['order_date'] ?? '') ?? DateTime.now(),
+      estimatedDate: DateTime.tryParse(json['estimated_date'] ?? '') ?? DateTime.now(),
+      shippingAddress: shippingAddress,
+      paymentMethod: paymentMethod,
+    );
+  }
 }

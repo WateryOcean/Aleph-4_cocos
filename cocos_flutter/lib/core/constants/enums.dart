@@ -1,4 +1,4 @@
-// Enum untuk order status dan kategori produk
+// Enum untuk status pesanan dan kategori produk
 enum OrderStatus {
   pendingPayment,
   designConsultation,

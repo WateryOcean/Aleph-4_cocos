@@ -4,7 +4,7 @@ import '../../../core/constants/app_colors.dart';
 
 class EventDummyData {
   static List<EventModel> events = [
-    // Upcoming Events
+    // Event Mendatang
     EventModel(
       id: 'u1',
       title: 'SAKURA HANAMI FESTIVAL 🌸 Cosplay & Coswalk Competition',
@@ -34,7 +34,7 @@ class EventDummyData {
       accentColor: const Color(0xFF6C5CE7),
     ),
     
-    // Completed Events
+    // Event Selesai
     EventModel(
       id: 'c1',
       title: 'Cosplay Community Gathering & Party',

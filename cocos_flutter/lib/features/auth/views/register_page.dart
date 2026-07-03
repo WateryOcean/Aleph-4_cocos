@@ -1,8 +1,9 @@
 import 'package:cocos_flutter/core/utils/navigation_helper.dart';
-import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../../../core/widgets/custom_button.dart';
 
@@ -21,6 +22,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _usernameCtrl = TextEditingController();
   final _dobCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _countryCtrl = TextEditingController();
 
@@ -30,39 +33,61 @@ class _RegisterPageState extends State<RegisterPage> {
     _usernameCtrl.dispose();
     _dobCtrl.dispose();
     _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     _phoneCtrl.dispose();
     _countryCtrl.dispose();
     super.dispose();
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text(message, style: GoogleFonts.nunito(color: Colors.white)),
+        backgroundColor: const Color(0xFF8B5CF6),
+      ),
+    );
+  }
+
   Future<void> _handleContinue() async {
     if (_fullNameCtrl.text.trim().isEmpty || _emailCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('Full name and email are required.',
-              style: GoogleFonts.nunito(color: Colors.white)),
-          backgroundColor: const Color(0xFF8B5CF6),
-        ),
-      );
+      _showSnackBar('Full name and email are required.');
       return;
     }
 
-    UserService.instance.setUser(
+    if (_passwordCtrl.text.isEmpty || _passwordCtrl.text.length < 6) {
+      _showSnackBar('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (_passwordCtrl.text != _confirmPasswordCtrl.text) {
+      _showSnackBar('Passwords do not match.');
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.signUp(
       fullName: _fullNameCtrl.text.trim(),
       username: _usernameCtrl.text.trim().isEmpty
           ? '@${_fullNameCtrl.text.trim().replaceAll(' ', '_').toLowerCase()}'
           : _usernameCtrl.text.trim(),
+      dob: _dobCtrl.text.trim(),
       email: _emailCtrl.text.trim(),
-      phone: _phoneCtrl.text.trim(),
+      password: _passwordCtrl.text,
+      phoneNumber: _phoneCtrl.text.trim(),
+      country: _countryCtrl.text.trim(),
       gender: _gender,
       profilePicture: _selectedProfilePath ??
           'assets/logo_images/itachi_profile.png',
     );
-    await UserService.instance.saveToPrefs();
 
-    if (mounted) {
+    if (!mounted) return;
+
+    if (success) {
       AppNavigation.navigateWithLoading(context, AppRoutes.home);
+    } else {
+      _showSnackBar('Registration failed. This email may already be in use.');
     }
   }
 
@@ -193,7 +218,7 @@ class _RegisterPageState extends State<RegisterPage> {
         padding: const EdgeInsets.all(32.0),
         child: Column(
           children: [
-            // Profile picture picker
+            // Pemilih foto profil
             Center(
               child: Stack(
                 children: [
@@ -262,6 +287,24 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: 20),
 
             AuthTextField(
+              label: 'Password',
+              hint: '••••••••',
+              icon: Icons.lock_outline,
+              isPassword: true,
+              controller: _passwordCtrl,
+            ),
+            const SizedBox(height: 20),
+
+            AuthTextField(
+              label: 'Confirm Password',
+              hint: '••••••••',
+              icon: Icons.lock_outline,
+              isPassword: true,
+              controller: _confirmPasswordCtrl,
+            ),
+            const SizedBox(height: 20),
+
+            AuthTextField(
               label: 'Phone Number',
               hint: '+1 234 567 890',
               icon: Icons.phone_android_outlined,
@@ -280,10 +323,19 @@ class _RegisterPageState extends State<RegisterPage> {
             _genderSelector(),
             const SizedBox(height: 48),
 
-            CustomButton(
-              text: 'Continue',
-              color: const Color(0xFF8B5CF6),
-              onPressed: _handleContinue,
+            Consumer<AuthProvider>(
+              builder: (context, authProvider, _) {
+                if (authProvider.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+                  );
+                }
+                return CustomButton(
+                  text: 'Continue',
+                  color: const Color(0xFF8B5CF6),
+                  onPressed: _handleContinue,
+                );
+              },
             ),
             const SizedBox(height: 32),
           ],

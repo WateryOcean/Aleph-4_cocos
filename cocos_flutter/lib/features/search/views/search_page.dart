@@ -1,8 +1,9 @@
 // ignore_for_file: deprecated_member_use, unrelated_type_equality_checks, curly_braces_in_flow_control_structures
-import 'package:cocos_flutter/features/product/data/product_dummy.dart';
+import 'package:cocos_flutter/features/product/providers/product_provider.dart';
 import 'package:cocos_flutter/features/search/models/search_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../product/widgets/product_card.dart';
@@ -34,13 +35,13 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     if (args is SearchFilters) {
       _activeFilters = args;
     } else if (args is String) {
-      // HANDLE KEYWORD FROM HOME CATEGORIES (e.g. '1_', '2_')
+      // TANGANI KATA KUNCI DARI KATEGORI HOME (misalnya '1_', '2_')
       _searchQuery = args;
       _searchController.text = _getDisplayQuery(args);
     }
   }
 
-  // Helper to show a clean name in the search bar if a prefix is used
+  // Helper untuk menampilkan nama yang rapi di search bar jika sebuah prefix digunakan
   String _getDisplayQuery(String query) {
     if (query == '1_') return 'Clothes';
     if (query == '2_') return 'Accessories';
@@ -51,19 +52,20 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     return query;
   }
 
-  List<ProductModel> _getFilteredProducts(bool isSetTab) {
-    return ProductDummyData.products.where((product) {
-      // 1. Keyword/SubCategory Match OR Prefix Match (for Home Categories)
+  List<ProductModel> _getFilteredProducts(
+      bool isSetTab, List<ProductModel> products) {
+    return products.where((product) {
+      // 1. Kecocokan Kata Kunci/SubKategori ATAU Kecocokan Prefix (untuk Kategori Home)
       final matchesSearch = _searchQuery.isEmpty ||
           product.subCategory.toLowerCase().contains(_searchQuery.toLowerCase()) || 
           product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          product.imagePath.contains(_searchQuery); // Checks for '1_', '2_', etc.
+          product.imagePath.contains(_searchQuery); // Memeriksa '1_', '2_', dst.
 
-      // 2. Genre (Category) Match - supports multiple genres
+      // 2. Kecocokan Genre (Kategori) - mendukung beberapa genre sekaligus
       final matchesGenre = !_activeFilters.hasGenreFilter ||
                            _activeFilters.genres.contains(product.category);
 
-      // 3. Wardrobe (Prefix) Match - supports multiple wardrobes
+      // 3. Kecocokan Wardrobe (Prefix) - mendukung beberapa wardrobe sekaligus
       bool matchesWardrobe = !_activeFilters.hasWardrobeFilter;
       
       if (_activeFilters.hasWardrobeFilter) {
@@ -83,7 +85,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         }
       }
 
-      // 4. Tab Type Match (Costumes vs Sets)
+      // 4. Kecocokan Jenis Tab (Costumes vs Sets)
       final isSetAsset = product.imagePath.contains('set_');
       final matchesTab = isSetTab ? isSetAsset : !isSetAsset;
 
@@ -100,6 +102,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final productProvider = context.watch<ProductProvider>();
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
       appBar: AppBar(
@@ -141,8 +144,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildProductGrid(false), // Costumes (1_ to 5_)
-                _buildProductGrid(true),  // Sets (set_)
+                _buildProductGrid(false, productProvider), // Costumes (1_ sampai 5_)
+                _buildProductGrid(true, productProvider),  // Sets (set_)
               ],
             ),
           ),
@@ -151,9 +154,15 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildProductGrid(bool isSet) {
-    final filteredList = _getFilteredProducts(isSet);
-    
+  Widget _buildProductGrid(bool isSet, ProductProvider productProvider) {
+    if (productProvider.isLoading && productProvider.products.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+      );
+    }
+
+    final filteredList = _getFilteredProducts(isSet, productProvider.products);
+
     if (filteredList.isEmpty) {
       return Center(
         child: Column(

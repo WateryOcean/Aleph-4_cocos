@@ -1,10 +1,12 @@
 // ignore_for_file: curly_braces_in_flow_control_structures, deprecated_member_use
 import 'package:cocos_flutter/features/auth/data/user_service.dart';
-import 'package:cocos_flutter/features/product/data/product_dummy.dart';
+import 'package:cocos_flutter/features/product/models/product_model.dart';
+import 'package:cocos_flutter/features/product/providers/product_provider.dart';
 import 'package:cocos_flutter/features/product/widgets/product_card.dart';
 import 'package:cocos_flutter/features/search/models/search_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
@@ -28,6 +30,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUser();
+    // Muat produk melalui provider (sudah dimuat di main, tapi pastikan tetap dimuat di sini)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().loadProducts();
+    });
   }
 
   Future<void> _loadUser() async {
@@ -41,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // CATEGORY NAVIGATION 
+  // NAVIGASI KATEGORI
   void _onCategoryPressed(String category) {
     String prefix = '';
     if (category == 'Clothes') {
@@ -54,11 +60,10 @@ class _HomePageState extends State<HomePage> {
       prefix = '4_';
     }
 
-    // Navigates ke search page dengan keyword yang sudah diprefiks sesuai kategori, misal "1_" untuk Clothes, "2_" untuk Accessories, dst.
     AppRoutes.goToSearch(context, keyword: prefix);
   }
 
-  // Filter  dengan Modal Bottom Sheet
+  // Filter dengan Modal Bottom Sheet
   void _showFilterModal() {
     List<String> tempGenres = List.from(_selectedGenres);
     List<String> tempWardrobes = List.from(_selectedWardrobes);
@@ -250,10 +255,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Tampilan utama
   @override
   Widget build(BuildContext context) {
     final user = UserService.instance;
+    final productProvider = context.watch<ProductProvider>();
+    final products = productProvider.products;
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
@@ -421,21 +427,28 @@ class _HomePageState extends State<HomePage> {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.65,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: _getFilteredIndices().length,
-                itemBuilder: (context, index) {
-                  int productIndex = _getFilteredIndices()[index];
-                  return _buildDynamicProductCard(context, productIndex);
-                },
-              ),
+              child: productProvider.isLoading && products.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+                      ),
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.65,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: _getFilteredIndices(products).length,
+                      itemBuilder: (context, index) {
+                        int productIndex = _getFilteredIndices(products)[index];
+                        return _buildDynamicProductCard(context, productIndex, products);
+                      },
+                    ),
             ),
             const SizedBox(height: 100),
           ],
@@ -453,9 +466,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<int> _getFilteredIndices() {
+  List<int> _getFilteredIndices(List<ProductModel> products) {
     List<int> baseIndices = [0, 1, 14, 24, 37, 59];
-    if (_selectedPopularFilter == 'All') return baseIndices;
+    if (_selectedPopularFilter == 'All') return baseIndices.where((i) => i < products.length).toList();
 
     String prefix = '';
     if (_selectedPopularFilter == 'Clothes') {
@@ -466,15 +479,15 @@ class _HomePageState extends State<HomePage> {
       prefix = '3_';
 
     return baseIndices.where((idx) {
-      if (idx >= ProductDummyData.products.length) return false;
-      return ProductDummyData.products[idx].imagePath.contains(prefix);
+      if (idx >= products.length) return false;
+      return products[idx].imagePath.contains(prefix);
     }).toList();
   }
 
-  Widget _buildDynamicProductCard(BuildContext context, int index) {
-    if (index >= ProductDummyData.products.length)
-      return const SizedBox.shrink();
-    final product = ProductDummyData.products[index];
+  Widget _buildDynamicProductCard(
+      BuildContext context, int index, List<ProductModel> products) {
+    if (index >= products.length) return const SizedBox.shrink();
+    final product = products[index];
     return ProductCard(
       imagePath: product.imagePath,
       name: product.name,

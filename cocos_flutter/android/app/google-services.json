@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "350431289250",
+    "project_id": "cocos-f8c40",
+    "storage_bucket": "cocos-f8c40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350431289250:android:21b9a2a10dba7b06785cfb",
+        "android_client_info": {
+          "package_name": "com.example.cocos_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350431289250-qsadiq3gf3pe9hgno2dk102ahuaa85hr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiGoF9HAmvLWHBJbUiCMnlbzae7v23ilM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350431289250-qsadiq3gf3pe9hgno2dk102ahuaa85hr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "350431289250-bl3qv17meij3a2iui1jqkrtrnjevbar1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cocosFlutter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -80,7 +80,7 @@ class _SpecialOffersPageState extends State<SpecialOffersPage> {
         Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
         break;
       case 1:
-        // Already on special offers page
+        // Sudah berada di halaman penawaran spesial
         break;
       case 3:
         // Navigator.pushNamed(context, '/cart');
@@ -109,14 +109,14 @@ class _SpecialOffersPageState extends State<SpecialOffersPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Offer Image
+          // Gambar Penawaran
           Container(
             height: 220,
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               image: DecorationImage(
-                // --- INSERT OFFER IMAGE PATH BELOW ---
+                // --- MASUKKAN PATH GAMBAR PENAWARAN DI BAWAH ---
                 image: AssetImage(imagePath),
                 fit: BoxFit.cover,
               ),

@@ -1,20 +1,40 @@
-
+// lib/features/checkout/models/checkout_model.dart
 import '../../cart/models/cart_model.dart';
 
 class ShippingAddress {
-  final String fullName;
+  final String recipientName;
   final String phoneNumber;
   final String addressLine;
   final String city;
   final String postalCode;
 
   ShippingAddress({
-    required this.fullName,
+    required this.recipientName,
     required this.phoneNumber,
     required this.addressLine,
     required this.city,
     required this.postalCode,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'recipient_name': recipientName,
+      'phone_number': phoneNumber,
+      'address_line': addressLine,
+      'city': city,
+      'postal_code': postalCode,
+    };
+  }
+
+  factory ShippingAddress.fromJson(Map<String, dynamic> json) {
+    return ShippingAddress(
+      recipientName: json['recipient_name'] ?? '',
+      phoneNumber: json['phone_number'] ?? '',
+      addressLine: json['address_line'] ?? '',
+      city: json['city'] ?? '',
+      postalCode: json['postal_code'] ?? '',
+    );
+  }
 }
 
 enum PaymentMethod {
