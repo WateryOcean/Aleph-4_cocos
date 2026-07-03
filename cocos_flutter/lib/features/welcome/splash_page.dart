@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../routes/app_routes.dart';
+import '../auth/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,9 +17,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Timer for 5 seconds then navigate to Welcome Page 1
-    Timer(const Duration(seconds: 5), () {
-      AppRoutes.goToWelcome1(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Timer(const Duration(seconds: 5), () {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        if (authProvider.isAuthenticated) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        } else {
+          AppRoutes.goToWelcome1(context);
+        }
+      });
     });
   }
 

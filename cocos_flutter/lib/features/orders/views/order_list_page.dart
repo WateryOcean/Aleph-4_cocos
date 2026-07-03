@@ -1,21 +1,50 @@
-// lib/features/orders/views/order_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
-import '../data/order_dummy.dart';
-import '../data/order_service.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/order_model.dart';
+import '../providers/order_provider.dart';
 
-class OrderListPage extends StatelessWidget {
+class OrderListPage extends StatefulWidget {
   final OrderCategory category;
   const OrderListPage({super.key, required this.category});
 
+  @override
+  State<OrderListPage> createState() => _OrderListPageState();
+}
+
+class _OrderListPageState extends State<OrderListPage> {
+  String _currentUserId = '';
+  bool _isLoadingCalled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ambil ID pengguna saat ini dari AuthProvider
+    final authProvider = context.watch<AuthProvider>();
+    final userId = authProvider.user?.id ?? 'guest_user';
+
+    // Hanya muat jika ID pengguna berubah atau belum pernah dimuat
+    if (_currentUserId != userId || !_isLoadingCalled) {
+      _currentUserId = userId;
+      _isLoadingCalled = true;
+      // Muat order setelah frame selesai dibangun untuk menghindari masalah
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<OrderProvider>().loadOrders(userId);
+        }
+      });
+    }
+  }
+
   String get _title {
-    switch (category) {
+    switch (widget.category) {
       case OrderCategory.unpaid:
         return 'Unpaid';
       case OrderCategory.packed:
@@ -28,7 +57,7 @@ class OrderListPage extends StatelessWidget {
   }
 
   Color get _accentColor {
-    switch (category) {
+    switch (widget.category) {
       case OrderCategory.unpaid:
         return AppColors.vividOrange;
       case OrderCategory.packed:
@@ -41,7 +70,7 @@ class OrderListPage extends StatelessWidget {
   }
 
   IconData get _headerIcon {
-    switch (category) {
+    switch (widget.category) {
       case OrderCategory.unpaid:
         return Icons.payment_outlined;
       case OrderCategory.packed:
@@ -55,21 +84,25 @@ class OrderListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final orders = [
-      ...OrderService.instance.byCategory(category),
-      ...OrderDummyData.byCategory(category),
-    ];
+    final orderProvider = context.watch<OrderProvider>();
+    final orders = widget.category == OrderCategory.bill
+        ? orderProvider.orders.where((o) => o.category != OrderCategory.unpaid).toList()
+        : orderProvider.orders.where((o) => o.category == widget.category).toList();
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
       appBar: CustomAppBar(title: _title, showBackButton: true),
-      body: orders.isEmpty ? _buildEmptyState() : _buildList(context, orders),
+      body: orderProvider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : orders.isEmpty
+              ? _buildEmptyState()
+              : _buildList(context, orders),
       bottomNavigationBar: CustomNavBar(
         currentIndex: 3,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushNamedAndRemoveUntil(
-              context, AppRoutes.home, (r) => false);
+                context, AppRoutes.home, (r) => false);
           }
           if (index == 1) AppRoutes.goToEvents(context);
           if (index == 2) AppRoutes.goToCart(context);
@@ -113,6 +146,12 @@ class OrderListPage extends StatelessWidget {
   }
 
   Widget _buildOrderCard(BuildContext context, Order order) {
+    return widget.category == OrderCategory.bill
+        ? _buildBillOrderCard(context, order)
+        : _buildStandardOrderCard(context, order);
+  }
+
+  Widget _buildStandardOrderCard(BuildContext context, Order order) {
     final dateStr = DateFormat('d MMM yyyy').format(order.orderDate);
 
     return GestureDetector(
@@ -126,7 +165,7 @@ class OrderListPage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Product info row 
+            // Baris info produk
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -193,7 +232,7 @@ class OrderListPage extends StatelessWidget {
               ),
             ),
 
-            // Progress mini-bar
+            // Mini-bar progres
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ClipRRect(
@@ -208,7 +247,7 @@ class OrderListPage extends StatelessWidget {
             ),
             const SizedBox(height: 2),
 
-            // Status footer
+            // Footer status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
@@ -227,26 +266,159 @@ class OrderListPage extends StatelessWidget {
                       style: GoogleFonts.nunito(
                         color: _accentColor,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  Text(
-                    'Step ${order.currentStep + 1} / ${kOrderTimeline.length}',
-                    style: GoogleFonts.nunito(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.arrow_forward_ios_rounded,
-                      color: Colors.white38, size: 12),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBillOrderCard(BuildContext context, Order order) {
+    final dateStr = DateFormat('d MMM yyyy').format(order.orderDate);
+    final total = order.price * order.quantity;
+
+    return GestureDetector(
+      onTap: () => AppRoutes.goToOrderDetail(context, order),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white10,
+                    image: DecorationImage(
+                      image: AssetImage(order.imageUrl),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order.productName,
+                        style: GoogleFonts.nunito(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        order.orderNumber,
+                        style: GoogleFonts.nunito(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: GoogleFonts.nunito(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.softMint.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'BILL',
+                    style: GoogleFonts.nunito(
+                      color: AppColors.softMint,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildBillRow('Item', '${order.quantity}x ${order.productName}'),
+            const SizedBox(height: 8),
+            _buildBillRow('Size / Material', '${order.selectedSize} · ${order.selectedMaterial}'),
+            const SizedBox(height: 8),
+            _buildBillRow('Price', AppFormatters.formatCurrency(order.price)),
+            const SizedBox(height: 8),
+            _buildBillRow('Total', AppFormatters.formatCurrency(total), isTotal: true),
+            const SizedBox(height: 8),
+            _buildBillRow('Shipping', 'FREE', valueColor: const Color(0xFF31B954)),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Grand Total',
+                  style: GoogleFonts.nunito(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  AppFormatters.formatCurrency(total),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.vividOrange,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBillRow(String label, String value,
+      {bool isTotal = false, Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.nunito(
+            color: AppColors.textSecondary,
+            fontSize: isTotal ? 14 : 13,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.nunito(
+            color: valueColor ?? AppColors.textPrimary,
+            fontSize: isTotal ? 14 : 13,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.normal,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,11 +1,12 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_navbar.dart';
 import '../../../routes/app_routes.dart';
-import '../data/event_dummy.dart';
 import '../models/event_model.dart';
+import '../providers/event_provider.dart';
 import 'event_detail_page.dart';
 
 class EventPage extends StatefulWidget {
@@ -20,9 +21,9 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredEvents = EventDummyData.events
-        .where((e) => e.isUpcoming == showUpcoming)
-        .toList();
+    final eventProvider = context.watch<EventProvider>();
+    final filteredEvents =
+        showUpcoming ? eventProvider.upcomingEvents : eventProvider.completedEvents;
 
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
@@ -53,13 +54,24 @@ class _EventPageState extends State<EventPage> {
           
           _buildFilterToggle(),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredEvents.length,
-              itemBuilder: (context, index) {
-                return _buildEventCard(filteredEvents[index]);
-              },
-            ),
+            child: eventProvider.isLoading && filteredEvents.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.eventAccent),
+                  )
+                : filteredEvents.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No events found',
+                          style: GoogleFonts.nunito(color: Colors.white54),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          return _buildEventCard(filteredEvents[index]);
+                        },
+                      ),
           ),
         ],
       ),

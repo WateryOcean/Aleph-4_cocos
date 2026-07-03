@@ -1,37 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_textfield.dart';
-import '../../cart/data/cart_service.dart';
-import '../../cart/models/cart_model.dart';
-import '../../orders/data/order_service.dart';
-import '../../orders/models/order_model.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../cart/models/cart_model.dart';
+import '../../cart/providers/cart_provider.dart';
+import '../../orders/models/order_model.dart';
+import '../../orders/providers/order_provider.dart';
 import '../models/checkout_model.dart';
- 
+
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
- 
+
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
- 
+
 class _CheckoutPageState extends State<CheckoutPage> {
   PaymentMethod _selectedMethod = PaymentMethod.creditCard;
-  
-  //Memangil data cart dari CartService untuk ditampilkan di summary
-  Cart get cart => CartService.instance.cart;
-  
-  // Shipping Address Controllers
+
+  // Controller untuk alamat pengiriman
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
   late TextEditingController _cityController;
   late TextEditingController _postalController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +40,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _cityController = TextEditingController();
     _postalController = TextEditingController();
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -51,9 +50,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _postalController.dispose();
     super.dispose();
   }
- 
+
   @override
   Widget build(BuildContext context) {
+    final cartItems = context.watch<CartProvider>().items;
+
     return Scaffold(
       backgroundColor: AppColors.mainBackground,
       appBar: const CustomAppBar(
@@ -74,12 +75,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const SizedBox(height: 32),
- 
+
             _buildSectionHeader('1. Shipping Address'),
             const SizedBox(height: 16),
             CustomTextField(
-              label: 'Username',
-              hint: 'Enter your username',
+              label: 'Recipient',
+              hint: 'Enter recipient name',
               controller: _nameController,
               onChanged: (_) => setState(() {}),
             ),
@@ -119,9 +120,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ],
             ),
- 
+
             const SizedBox(height: 32),
- 
+
             _buildSectionHeader('2. Payment Method'),
             const SizedBox(height: 16),
             _buildPaymentOption(
@@ -139,16 +140,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
               'Digital Wallet',
               Icons.account_balance_wallet_rounded,
             ),
- 
+
             const SizedBox(height: 32),
- 
-            _buildOrderSummary(context),
+
+            _buildOrderSummary(context, cartItems),
           ],
         ),
       ),
     );
   }
- 
+
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
@@ -159,7 +160,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
     );
   }
- 
+
   Widget _buildPaymentOption(
       PaymentMethod method, String label, IconData icon) {
     final isSelected = _selectedMethod == method;
@@ -182,17 +183,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Icon(
               icon,
-              color: isSelected
-                  ? AppColors.cartTheme
-                  : Colors.white60,
+              color: isSelected ? AppColors.cartTheme : Colors.white60,
             ),
             const SizedBox(width: 12),
             Text(
               label,
               style: GoogleFonts.nunito(
                 color: Colors.white,
-                fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
             const Spacer(),
@@ -204,7 +202,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
     );
   }
- 
+
   String _getPaymentMethodLabel() {
     switch (_selectedMethod) {
       case PaymentMethod.creditCard:
@@ -227,7 +225,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
-  Widget _buildOrderSummary(BuildContext context) {
+  Widget _buildOrderSummary(BuildContext context, List<CartItem> items) {
+    final cartProvider = context.watch<CartProvider>();
+    final currentCart = cartProvider.cart;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -237,7 +238,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Order Summary Header
+          // Judul Ringkasan Pesanan
           Text(
             'Order Summary',
             style: GoogleFonts.nunito(
@@ -248,7 +249,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
           const Divider(height: 24),
 
-          // Order Items Section
+          // Bagian Item Pesanan
           Text(
             'Items',
             style: GoogleFonts.nunito(
@@ -258,7 +259,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
           ),
           const SizedBox(height: 12),
-          ...cart.items.map((item) => Padding(
+          ...items.map((item) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -285,7 +286,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
           const Divider(height: 24),
 
-          // Shipping Address Section
+          // Bagian Alamat Pengiriman
           Text(
             'Shipping Address',
             style: GoogleFonts.nunito(
@@ -359,7 +360,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
           const SizedBox(height: 20),
 
-          // Payment Method Section
+          // Bagian Metode Pembayaran
           Text(
             'Payment Method',
             style: GoogleFonts.nunito(
@@ -395,9 +396,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
           const SizedBox(height: 24),
 
-          // Price Summary
+          // Ringkasan Harga
           _buildSummaryRow(
-              'Subtotal', AppFormatters.formatCurrency(cart.subtotal)),
+              'Subtotal', AppFormatters.formatCurrency(currentCart.subtotal)),
           const SizedBox(height: 8),
           _buildSummaryRow('Shipping', 'FREE', isGreen: true),
           const SizedBox(height: 24),
@@ -411,7 +412,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       fontWeight: FontWeight.bold,
                       color: AppColors.mainBackground)),
               Text(
-                AppFormatters.formatCurrency(cart.total),
+                AppFormatters.formatCurrency(currentCart.total),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -422,35 +423,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
           const SizedBox(height: 24),
 
-          // Place Order Button
+          // Tombol Buat Pesanan
           CustomButton(
             text: 'PLACE ORDER',
             color: AppColors.cartTheme,
             textColor: Colors.white,
-            onPressed: () {
-              OrderService.instance.placeOrder(
-                cartItems: List.from(cart.items),
-                name: _nameController.text,
-                phone: _phoneController.text,
-                address: _addressController.text,
-                city: _cityController.text,
-                postal: _postalController.text,
-                paymentMethod: _selectedMethod,
+            onPressed: () async {
+              final userId = context.read<AuthProvider>().user?.id ?? 'guest_user';
+              final cartItems = List<CartItem>.from(context.read<CartProvider>().items);
+
+              if (cartItems.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Your cart is empty.')),
+                );
+                return;
+              }
+
+              // Susun alamat pengiriman dari form
+              final shippingAddress = ShippingAddress(
+                recipientName: _nameController.text.trim(),
+                phoneNumber: _phoneController.text.trim(),
+                addressLine: _addressController.text.trim(),
+                city: _cityController.text.trim(),
+                postalCode: _postalController.text.trim(),
               );
-              CartService.instance.clear();
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.orderList,
-                (route) => route.settings.name == AppRoutes.home,
-                arguments: OrderCategory.packed,
-              );
+
+              // 1. Buat pesanan melalui OrderProvider dengan alamat dan pembayaran
+              await context.read<OrderProvider>().checkoutCart(
+                    userId: userId,
+                    cartItems: cartItems,
+                    paymentMethod: _selectedMethod,
+                    shippingAddress: shippingAddress,
+                  );
+
+              // 2. Kosongkan keranjang melalui CartProvider
+              await context.read<CartProvider>().clearCart(userId);
+
+              // 3. Arahkan ke Daftar Pesanan (kategori Bill)
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.orderList,
+                  (route) => route.settings.name == AppRoutes.home,
+                  arguments: OrderCategory.bill,
+                );
+              }
             },
           ),
         ],
       ),
     );
   }
- 
+
   Widget _buildSummaryRow(String label, String value,
       {bool isGreen = false}) {
     return Row(

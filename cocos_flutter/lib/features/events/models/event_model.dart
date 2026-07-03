@@ -28,4 +28,22 @@ class EventModel {
     this.isUpcoming = true,
     required this.accentColor,
   });
+
+  factory EventModel.fromJson(Map<String, dynamic> json) {
+  return EventModel(
+    id: json['id'],
+    title: json['title'],
+    category: json['category'],
+    date: json['date'],
+    location: json['location'],
+    time: json['time'],
+    imageUrl: json['imageUrl'],
+    description: json['description'],
+    contactInfo: json['contactInfo'],
+    socialMedia: Map<String, String>.from(json['socialMedia']),
+    isUpcoming: json['isUpcoming'] ?? true,
+    accentColor: Color(int.parse(json['accentColor'])),
+  );
 }
+}
+

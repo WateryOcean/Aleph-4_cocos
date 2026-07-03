@@ -16,6 +16,7 @@ class ChatDetailPage extends StatefulWidget {
 class _ChatDetailPageState extends State<ChatDetailPage> {
   late List<ChatMessage> _messages;
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -23,29 +24,49 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     _messages = ChatDummyData.getMessages(widget.conversation.id);
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _sendMessage() {
-    if (_controller.text.trim().isEmpty) return;
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
     setState(() {
       _messages.add(ChatMessage(
-        id: DateTime.now().toString(),
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         senderId: 'me',
-        text: _controller.text,
+        text: text,
         timestamp: DateTime.now(),
         isMe: true,
       ));
       _controller.clear();
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final messages = _messages;
+
     return Scaffold(
       backgroundColor: const Color(0xFF13121B),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1C1B23),
         elevation: 0,
         centerTitle: false,
-        // Tombol Undo untuk kembali ke halaman sebelumnya
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
@@ -58,7 +79,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               radius: 16,
             ),
             const SizedBox(width: 12),
-            // Menampilkan Nama Profil dan Status "Chat" di sampingnya
             Expanded(
               child: RichText(
                 text: TextSpan(
@@ -74,7 +94,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     TextSpan(
                       text: '',
                       style: GoogleFonts.nunito(
-                        color: AppColors.deepPurple, // Warna ungu untuk teks Chat
+                        color: AppColors.deepPurple,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -86,18 +106,25 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.phone_outlined, color: Colors.white70, size: 20), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.videocam_outlined, color: Colors.white70, size: 20), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.phone_outlined, color: Colors.white70, size: 20),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam_outlined, color: Colors.white70, size: 20),
+            onPressed: () {},
+          ),
         ],
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              itemCount: _messages.length,
+              itemCount: messages.length,
               itemBuilder: (context, index) {
-                final msg = _messages[index];
+                final msg = messages[index];
                 return _buildChatBubbleWithProfile(msg);
               },
             ),
@@ -109,13 +136,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   Widget _buildChatBubbleWithProfile(ChatMessage msg) {
-    // Get current user info from AuthDummyData
     final String senderName = msg.isMe ? UserService.instance.username : widget.conversation.vendorName;
     final String senderAvatar = msg.isMe 
         ? UserService.instance.profilePicture
         : widget.conversation.vendorImageUrl;
 
-    // Helper to determine if image is local asset or network
     ImageProvider getImageProvider(String imagePath) {
       if (imagePath.startsWith('assets/')) {
         return AssetImage(imagePath);
@@ -138,7 +163,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             child: Column(
               crossAxisAlignment: msg.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                // Header Pesan: Nama Pengirim
                 Text(
                   senderName,
                   style: GoogleFonts.nunito(
@@ -148,7 +172,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Bubble Chat
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -198,6 +221,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
+                onSubmitted: (_) => _sendMessage(),
               ),
             ),
             const SizedBox(width: 8),

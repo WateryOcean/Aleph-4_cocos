@@ -26,7 +26,7 @@ class CustomLoadingIndicator extends StatelessWidget {
   }
 }
 
-// Overlay version for full screen loading
+// Versi overlay untuk loading layar penuh
 class FullScreenLoader extends StatelessWidget {
   const FullScreenLoader({super.key});
 

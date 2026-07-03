@@ -1,11 +1,11 @@
-import 'package:cocos_flutter/features/auth/data/auth_dummy.dart';
-import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/utils/navigation_helper.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 
 class SignInPage extends StatefulWidget {
@@ -19,6 +19,7 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // 1. Aksi untuk Login menggunakan Email & Password (Firebase Authentication)
   Future<void> _handleSignIn() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -28,30 +29,15 @@ class _SignInPageState extends State<SignInPage> {
       return;
     }
 
-    if (!AuthDummyData.dummyUsers.containsKey(email)) {
-      _showSnackBar(
-          'Email not found. Try: cosplayer@example.com / password123');
-      return;
-    }
+    final authProvider = context.read<AuthProvider>();
+    final bool success = await authProvider.signIn(email, password);
 
-    if (AuthDummyData.dummyUsers[email] != password) {
-      _showSnackBar('Invalid password. Please try again.');
-      return;
-    }
-
-    final profile = AuthDummyData.userProfiles[email]!;
-    UserService.instance.setUser(
-      fullName: profile.fullName,
-      username: profile.username,
-      email: profile.email,
-      phone: profile.phoneNumber,
-      gender: profile.gender,
-      profilePicture: profile.profilePicture,
-    );
-    await UserService.instance.saveToPrefs();
-
-    if (mounted) {
-      AppNavigation.navigateWithLoading(context, AppRoutes.home);
+    if (success) {
+      if (mounted) {
+        AppNavigation.navigateWithLoading(context, AppRoutes.home);
+      }
+    } else {
+      _showSnackBar('Email or password is incorrect. Please try again.');
     }
   }
 
@@ -74,6 +60,8 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -81,7 +69,7 @@ class _SignInPageState extends State<SignInPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: isLoading ? null : () => Navigator.pop(context),
         ),
         title: Text(
           'Sign In',
@@ -120,11 +108,14 @@ class _SignInPageState extends State<SignInPage> {
               controller: _passwordController,
             ),
             const SizedBox(height: 40),
-            CustomButton(
-              text: 'Continue',
-              color: const Color(0xFF6C5CE7),
-              onPressed: _handleSignIn,
-            ),
+
+            isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF6C5CE7)))
+                : CustomButton(
+                    text: 'Continue',
+                    color: const Color(0xFF6C5CE7),
+                    onPressed: _handleSignIn,
+                  ),
           ],
         ),
       ),

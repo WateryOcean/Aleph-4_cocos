@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_appbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../routes/app_routes.dart';
-import '../../cart/data/cart_service.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../cart/providers/cart_provider.dart';
 import '../models/product_model.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -18,12 +20,56 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int _selectedVersionIndex = 0;
   String? _selectedMaterial;
   String? _selectedSize;
+  ScaffoldMessengerState? _scaffoldMessenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+  }
+
+  @override
+  void dispose() {
+    _scaffoldMessenger?.removeCurrentSnackBar();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final product = ModalRoute.of(context)!.settings.arguments as ProductModel;
+    // Aman: ambil argumen dengan pengecekan null
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is! ProductModel) {
+      // Tampilkan layar error
+      return Scaffold(
+        backgroundColor: AppColors.mainBackground,
+        appBar: CustomAppBar(
+          title: 'Error',
+          showBackButton: true,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white54, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Product not found',
+                style: GoogleFonts.nunito(color: Colors.white70, fontSize: 18),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final product = args;
     
-    // Initialize defaults on first build
+    // Inisialisasi nilai default pada build pertama
     _selectedMaterial ??= product.materials.isNotEmpty ? product.materials[0] : null;
     _selectedSize ??= product.sizes.isNotEmpty ? product.sizes[0] : null;
 
@@ -37,7 +83,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- PRODUCT PICTURE ---
+            // --- GAMBAR PRODUK ---
             Container(
               height: 520,
               width: 450,
@@ -55,7 +101,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- PRICE ---
+                  // --- HARGA ---
                   Text(
                     '\$${product.price.toStringAsFixed(2)}',
                     style: GoogleFonts.nunito(
@@ -66,7 +112,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: 8),
 
-                  // --- PRODUCT NAME & CATEGORY ---
+                  // --- NAMA & KATEGORI PRODUK ---
                   Text(
                     product.name,
                     style: GoogleFonts.nunito(
@@ -86,7 +132,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   const SizedBox(height: 12),
 
-                  // --- RATING ---
+                  // --- PENILAIAN ---
                   Row(
                     children: [
                       const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
@@ -106,7 +152,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     child: Divider(color: Colors.white10),
                   ),
 
-                  // --- COLOR / VERSION ---
+                  // --- WARNA / VERSI ---
                   _buildSectionTitle('Color / Version'),
                   const SizedBox(height: 12),
                   SingleChildScrollView(
@@ -145,7 +191,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   const SizedBox(height: 32),
 
-                  // --- MATERIAL SELECTION ---
+                  // --- PEMILIHAN MATERIAL ---
                   _buildSectionTitle('Material'),
                   const SizedBox(height: 12),
                   Wrap(
@@ -168,7 +214,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   const SizedBox(height: 32),
 
-                  // --- SIZE SELECTION ---
+                  // --- PEMILIHAN UKURAN ---
                   _buildSectionTitle('Size'),
                   const SizedBox(height: 12),
                   Row(
@@ -203,7 +249,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   const SizedBox(height: 32),
 
-                  // --- DESCRIPTION ---
+                  // --- DESKRIPSI ---
                   _buildSectionTitle('Description'),
                   const SizedBox(height: 12),
                   Text(
@@ -216,7 +262,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   const SizedBox(height: 40),
 
-                  // --- COMMENTS ---
+                  // --- KOMENTAR ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -297,11 +343,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     String? selectedSize,
     String? selectedMaterial,
   ) {
-    void addToCart() {
-      CartService.instance.addProduct(
+    void addToCart(BuildContext context) {
+      final userId = context.read<AuthProvider>().user?.id ?? 'guest_user';
+      context.read<CartProvider>().addItem(
+        userId,
         product,
-        size: selectedSize ?? (product.sizes.isNotEmpty ? product.sizes.first : 'M'),
-        material: selectedMaterial ?? (product.materials.isNotEmpty ? product.materials.first : 'Standard'),
+        selectedSize ?? (product.sizes.isNotEmpty ? product.sizes.first : 'M'),
+        selectedMaterial ?? (product.materials.isNotEmpty ? product.materials.first : 'Standard'),
       );
     }
 
@@ -315,7 +363,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       child: SafeArea(
         child: Row(
           children: [
-            // Chat button
+            // Tombol chat
             GestureDetector(
               onTap: () => AppRoutes.goToChat(context),
               child: Container(
@@ -328,10 +376,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
             const SizedBox(width: 16),
-            // Add to cart button
+            // Tombol tambah ke keranjang
             IconButton(
               onPressed: () {
-                addToCart();
+                addToCart(context);
+                
+                // Perbaikan: hapus SnackBar yang ada terlebih dahulu
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                
+                // Kemudian tampilkan SnackBar baru
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -344,7 +397,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     action: SnackBarAction(
                       label: 'View Cart',
                       textColor: AppColors.textPrimary,
-                      onPressed: () => AppRoutes.goToCart(context),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        AppRoutes.goToCart(context);
+                      },
                     ),
                   ),
                 );
@@ -352,13 +408,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               icon: const Icon(Icons.add_shopping_cart_rounded, color: AppColors.primary, size: 28),
             ),
             const SizedBox(width: 16),
-            // Checkout button
+            // Tombol checkout
             Expanded(
               child: CustomButton(
                 text: 'Checkout',
                 color: AppColors.primary,
                 onPressed: () {
-                  addToCart();
+                  addToCart(context);
                   AppRoutes.goToCheckout(context);
                 },
               ),

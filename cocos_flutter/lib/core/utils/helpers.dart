@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppHelpers {
-  // Snackbar feedback
+  // Umpan balik Snackbar
   static void showSnackBar(BuildContext context, String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -31,7 +31,7 @@ class AppHelpers {
         .hasMatch(email);
   }
 
-  // Unfocus keyboard
+  // Menghilangkan fokus keyboard
   static void dismissKeyboard(BuildContext context) {
     FocusScope.of(context).unfocus();
   }

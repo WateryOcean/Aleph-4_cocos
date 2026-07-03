@@ -43,9 +43,10 @@ dependencies:
   path: ^1.8.3
   firebase_core: 
   firebase_auth: ^6.5.2
-  cloud_firestore: 6.5.0
+  cloud_firestore: ^6.6.0
   sqflite: 
   connectivity_plus: 
+  google_sign_in: 
 
 
 dev_dependencies:

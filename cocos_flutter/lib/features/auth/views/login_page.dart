@@ -1,10 +1,11 @@
 import 'package:cocos_flutter/core/utils/navigation_helper.dart';
-import 'package:cocos_flutter/features/auth/data/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/auth_provider.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -32,17 +33,17 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 40),
               OutlinedButton.icon(
                 onPressed: () async {
-                UserService.instance.setUser(
-                  fullName: 'Aleph-4',
-                  username: '@aleph_cos4er',
-                  email: 'aleph@example.com',
-                  phone: '+1 234 567 890',
-                  gender: 'Male',
-                  profilePicture: 'assets/logo_images/itachi_profile.png',
-                );
-                await UserService.instance.saveToPrefs();
-                if (context.mounted) {
+                final authProvider = context.read<AuthProvider>();
+                final success = await authProvider.signInWithGoogle();
+                if (!context.mounted) return;
+                if (success) {
                   AppNavigation.navigateWithLoading(context, AppRoutes.home);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Google Sign-In dibatalkan atau gagal sistem.'),
+                    ),
+                  );
                 }
               },
                 icon: Image.asset('assets/logo_images/google_logo.png', height: 20),

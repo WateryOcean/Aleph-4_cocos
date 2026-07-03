@@ -36,7 +36,7 @@ class ProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   image: DecorationImage(
-                    // --- DYNAMIC: PRODUCT IMAGE PATH ---
+                    // --- DINAMIS: PATH GAMBAR PRODUK ---
                     image: AssetImage(imagePath),
                     fit: BoxFit.cover,
                   ),

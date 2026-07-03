@@ -13,7 +13,7 @@ class WelcomeScreen1 extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Top Half: Dark Slate
+          // Bagian Atas: Dark Slate
           Expanded(
             flex: 6,
             child: Container(
@@ -38,7 +38,7 @@ class WelcomeScreen1 extends StatelessWidget {
               ),
             ),
           ),
-          // Bottom Half: White Space
+          // Bagian Bawah: Ruang Putih
           Expanded(
             flex: 4,
             child: Padding(
